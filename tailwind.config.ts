@@ -10,8 +10,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+<<<<<<< HEAD
         body: ['PT Sans', 'sans-serif'],
         headline: ['PT Sans', 'sans-serif'],
+=======
+        body: ['Inter', 'sans-serif'],
+        headline: ['Inter', 'sans-serif'],
+>>>>>>> 7d3cda9 (initial scaffold)
         code: ['monospace'],
       },
       colors: {
