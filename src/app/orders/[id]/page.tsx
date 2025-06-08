@@ -4,6 +4,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
 =======
 =======
 
@@ -12,6 +13,8 @@ import { useEffect, useState } from 'react';
 
 import { useEffect, useState } } from 'react';
 >>>>>>> 633c2f0 (Updated app)
+=======
+>>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
@@ -178,10 +181,14 @@ export default function OrderDetailsPage() {
 
           <CardFooter className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
 =======
             <PrintBillButton orderId={order.id} />
 >>>>>>> 633c2f0 (Updated app)
+=======
+            <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
+>>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
             {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
               <Button asChild variant="default">
                 <Link href={`/?edit=${order.id}`}>
@@ -196,4 +203,3 @@ export default function OrderDetailsPage() {
     </AppLayout>
   );
 }
-

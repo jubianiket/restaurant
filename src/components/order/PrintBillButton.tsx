@@ -1,7 +1,11 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 633c2f0 (Updated app)
+=======
+
+>>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
 "use client";
 
 import { Button } from '@/components/ui/button';
@@ -42,10 +46,14 @@ export default function PrintBillButton({ orderId }: { orderId: string }) {
 
   return (
 <<<<<<< HEAD
+<<<<<<< HEAD
     <Button onClick={handlePrint} variant="outline" data-testid="print-bill-button">
 =======
     <Button onClick={handlePrint} variant="outline">
 >>>>>>> 633c2f0 (Updated app)
+=======
+    <Button onClick={handlePrint} variant="outline" data-testid="print-bill-button">
+>>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
       <Printer size={18} className="mr-2" />
       Print Bill
     </Button>
