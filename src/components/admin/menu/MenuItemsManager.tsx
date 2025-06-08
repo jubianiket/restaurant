@@ -14,9 +14,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Label } from '@/components/ui/label';
 =======
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+import { Label } from '@/components/ui/label';
+>>>>>>> 3a25f53 (Console Error)
 import { toast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Upload, Loader2, AlertTriangle, FileText, ListFilter } from 'lucide-react';
 import MenuItemFormDialog, { type MenuItemFormData } from './MenuItemFormDialog';
@@ -42,13 +46,19 @@ export default function MenuItemsManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3a25f53 (Console Error)
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
+<<<<<<< HEAD
 =======
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+>>>>>>> 3a25f53 (Console Error)
 
   const fetchMenuItems = useCallback(async () => {
     setIsLoading(true);
@@ -71,14 +81,20 @@ export default function MenuItemsManager() {
 
   useEffect(() => {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3a25f53 (Console Error)
     if (hasMounted) {
       fetchMenuItems();
     }
   }, [fetchMenuItems, hasMounted]);
+<<<<<<< HEAD
 =======
     fetchMenuItems();
   }, [fetchMenuItems]);
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+>>>>>>> 3a25f53 (Console Error)
 
   const handleSaveMenuItem = async (data: MenuItemFormData, id?: string) => {
     const url = id ? `/api/admin/menu/items/${id}` : '/api/admin/menu/items';
@@ -157,6 +173,7 @@ export default function MenuItemsManager() {
   };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   if (!hasMounted || (isLoading && menuItems.length === 0 && !error) ) {
 =======
   const filteredMenuItems = menuItems.filter(item =>
@@ -166,6 +183,9 @@ export default function MenuItemsManager() {
 
   if (isLoading && !error && menuItems.length === 0) { // Show full page loader only on initial load
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+  if (!hasMounted || (isLoading && menuItems.length === 0 && !error) ) {
+>>>>>>> 3a25f53 (Console Error)
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -174,13 +194,19 @@ export default function MenuItemsManager() {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3a25f53 (Console Error)
   const filteredMenuItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+<<<<<<< HEAD
 =======
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+>>>>>>> 3a25f53 (Console Error)
   return (
     <div className="space-y-6">
       <Card>
@@ -325,6 +351,9 @@ export default function MenuItemsManager() {
   );
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
+=======
+>>>>>>> 3a25f53 (Console Error)
