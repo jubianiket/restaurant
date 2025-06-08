@@ -13,6 +13,7 @@ export default function PrintBillButton({ orderId }: { orderId: string }) {
 
   const handlePrint = () => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     // This will trigger the browser's print dialog
     window.print();
     
@@ -27,6 +28,14 @@ export default function PrintBillButton({ orderId }: { orderId: string }) {
       title: "Print Bill",
       description: `Bill for order ${orderId} sent to printer (simulated).`,
 >>>>>>> 633c2f0 (Updated app)
+=======
+    // This will trigger the browser's print dialog
+    window.print();
+    
+    toast({
+      title: "Print Bill",
+      description: `Attempting to print bill for order ${orderId}. Please use your browser's print options.`,
+>>>>>>> b19a5e7 (print bill is not added)
       variant: "default",
     });
   };
