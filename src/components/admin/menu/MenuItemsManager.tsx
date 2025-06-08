@@ -13,7 +13,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+<<<<<<< HEAD
 import { Label } from '@/components/ui/label';
+=======
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
 import { toast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Upload, Loader2, AlertTriangle, FileText, ListFilter } from 'lucide-react';
 import MenuItemFormDialog, { type MenuItemFormData } from './MenuItemFormDialog';
@@ -38,11 +41,14 @@ export default function MenuItemsManager() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+<<<<<<< HEAD
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
+=======
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
 
   const fetchMenuItems = useCallback(async () => {
     setIsLoading(true);
@@ -64,10 +70,15 @@ export default function MenuItemsManager() {
   }, []);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (hasMounted) {
       fetchMenuItems();
     }
   }, [fetchMenuItems, hasMounted]);
+=======
+    fetchMenuItems();
+  }, [fetchMenuItems]);
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
 
   const handleSaveMenuItem = async (data: MenuItemFormData, id?: string) => {
     const url = id ? `/api/admin/menu/items/${id}` : '/api/admin/menu/items';
@@ -145,7 +156,16 @@ export default function MenuItemsManager() {
     }
   };
 
+<<<<<<< HEAD
   if (!hasMounted || (isLoading && menuItems.length === 0 && !error) ) {
+=======
+  const filteredMenuItems = menuItems.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading && !error && menuItems.length === 0) { // Show full page loader only on initial load
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -153,11 +173,14 @@ export default function MenuItemsManager() {
     );
   }
 
+<<<<<<< HEAD
   const filteredMenuItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+=======
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
   return (
     <div className="space-y-6">
       <Card>
@@ -301,3 +324,7 @@ export default function MenuItemsManager() {
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
