@@ -1,9 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 "use client";
 
 import { useEffect, useState } from 'react';
 =======
+=======
+
+>>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
 "use client";
 
 import { useEffect, useState } } from 'react';
@@ -32,9 +36,12 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     if (id) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       // In a real app, fetch order by ID from a backend
 >>>>>>> 633c2f0 (Updated app)
+=======
+>>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
       const foundOrder = mockOrders.find(o => o.id === id);
       setOrder(foundOrder || null);
     }
@@ -130,6 +137,9 @@ export default function OrderDetailsPage() {
                 {order.items.map((item: OrderItem) => (
                   <div key={item.id} className="flex items-center gap-4 p-3 bg-background/50 rounded-md border">
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
                     {item.imageUrl ? (
                       <Image 
                         src={item.imageUrl} 
@@ -141,10 +151,13 @@ export default function OrderDetailsPage() {
                       />
                     ) : (
                       <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center text-xs text-muted-foreground">No Image</div>
+<<<<<<< HEAD
 =======
                     {item.imageUrl && (
                       <Image src={item.imageUrl} alt={item.name} width={60} height={60} className="rounded object-cover" data-ai-hint={item.dataAiHint || item.category.toLowerCase()} />
 >>>>>>> 633c2f0 (Updated app)
+=======
+>>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
                     )}
                     <div className="flex-grow">
                       <p className="font-semibold">{item.name}</p>
@@ -183,3 +196,4 @@ export default function OrderDetailsPage() {
     </AppLayout>
   );
 }
+
