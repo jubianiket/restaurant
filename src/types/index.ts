@@ -1,0 +1,31 @@
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl?: string;
+  dataAiHint?: string;
+}
+
+export type OrderType = 'delivery' | 'dine-in' | 'take-away';
+
+export interface OrderItem extends MenuItem {
+  quantity: number;
+}
+
+export interface CustomerDetails {
+  name: string;
+  phone: string;
+  address?: string;
+}
+
+export interface Order {
+  id: string;
+  type: OrderType;
+  customerDetails: CustomerDetails;
+  items: OrderItem[];
+  totalCost: number;
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
+  createdAt: string; // ISO date string
+}
