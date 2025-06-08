@@ -1,5 +1,9 @@
 import Link from 'next/link';
+<<<<<<< HEAD
 import { UtensilsCrossed, History, Home, Settings } from 'lucide-react';
+=======
+import { UtensilsCrossed, History, Home } from 'lucide-react';
+>>>>>>> 633c2f0 (Updated app)
 
 export default function Header() {
   return (
@@ -18,10 +22,13 @@ export default function Header() {
             <History size={20} />
             Order History
           </Link>
+<<<<<<< HEAD
           <Link href="/admin/menu" className="hover:text-accent flex items-center gap-1">
             <Settings size={20} />
             Manage Menu
           </Link>
+=======
+>>>>>>> 633c2f0 (Updated app)
         </nav>
       </div>
     </header>

@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 
 "use client";
 
 import { useEffect, useState } from 'react';
+=======
+"use client";
+
+import { useEffect, useState } } from 'react';
+>>>>>>> 633c2f0 (Updated app)
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AppLayout from '@/components/layout/AppLayout';
@@ -25,6 +31,10 @@ export default function OrderDetailsPage() {
 
   useEffect(() => {
     if (id) {
+<<<<<<< HEAD
+=======
+      // In a real app, fetch order by ID from a backend
+>>>>>>> 633c2f0 (Updated app)
       const foundOrder = mockOrders.find(o => o.id === id);
       setOrder(foundOrder || null);
     }
@@ -119,6 +129,7 @@ export default function OrderDetailsPage() {
               <div className="space-y-3">
                 {order.items.map((item: OrderItem) => (
                   <div key={item.id} className="flex items-center gap-4 p-3 bg-background/50 rounded-md border">
+<<<<<<< HEAD
                     {item.imageUrl ? (
                       <Image 
                         src={item.imageUrl} 
@@ -130,6 +141,10 @@ export default function OrderDetailsPage() {
                       />
                     ) : (
                       <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center text-xs text-muted-foreground">No Image</div>
+=======
+                    {item.imageUrl && (
+                      <Image src={item.imageUrl} alt={item.name} width={60} height={60} className="rounded object-cover" data-ai-hint={item.dataAiHint || item.category.toLowerCase()} />
+>>>>>>> 633c2f0 (Updated app)
                     )}
                     <div className="flex-grow">
                       <p className="font-semibold">{item.name}</p>
@@ -149,7 +164,11 @@ export default function OrderDetailsPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t">
+<<<<<<< HEAD
             <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
+=======
+            <PrintBillButton orderId={order.id} />
+>>>>>>> 633c2f0 (Updated app)
             {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
               <Button asChild variant="default">
                 <Link href={`/?edit=${order.id}`}>

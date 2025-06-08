@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 633c2f0 (Updated app)
 import type { MenuItem } from '@/types';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -13,11 +16,16 @@ interface MenuItemCardProps {
 export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+<<<<<<< HEAD
       {item.imageUrl ? (
+=======
+      {item.imageUrl && (
+>>>>>>> 633c2f0 (Updated app)
         <div className="relative w-full h-48">
           <Image
             src={item.imageUrl}
             alt={item.name}
+<<<<<<< HEAD
             fill // Changed from layout="fill" objectFit="cover" for Next 13+
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Example sizes, adjust as needed
             style={{ objectFit: 'cover' }} // Replaces objectFit prop
@@ -28,6 +36,13 @@ export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) 
         <div className="relative w-full h-48 bg-muted flex items-center justify-center">
           <p className="text-sm text-muted-foreground">No image</p>
         </div>
+=======
+            layout="fill"
+            objectFit="cover"
+            data-ai-hint={item.dataAiHint || item.category.toLowerCase()}
+          />
+        </div>
+>>>>>>> 633c2f0 (Updated app)
       )}
       <CardHeader>
         <CardTitle className="font-headline text-xl">{item.name}</CardTitle>
