@@ -1,3 +1,4 @@
+
 import type { MenuItem } from '@/types';
 import MenuItemCard from './MenuItemCard';
 
@@ -17,8 +18,8 @@ export default function MenuList({ menuItems, onAddToOrder }: MenuListProps) {
     <div className="space-y-8">
       {categories.map(category => (
         <section key={category}>
-          <h3 className="text-2xl font-headline font-semibold mb-4 text-primary/80 border-b-2 border-primary/20 pb-2">{category}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h3 className="text-xl font-headline font-semibold mb-3 text-primary/80 border-b-2 border-primary/20 pb-1.5">{category}</h3> {/* Adjusted heading size and spacing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"> {/* Updated grid layout and gap */}
             {menuItems.filter(item => item.category === category).map(item => (
               <MenuItemCard key={item.id} item={item} onAddToOrder={onAddToOrder} />
             ))}

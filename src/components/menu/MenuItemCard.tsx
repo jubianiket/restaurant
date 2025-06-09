@@ -20,21 +20,11 @@ interface MenuItemCardProps {
 export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
-<<<<<<< HEAD
-<<<<<<< HEAD
       {item.imageUrl ? (
-=======
-      {item.imageUrl && (
->>>>>>> 633c2f0 (Updated app)
-=======
-      {item.imageUrl ? (
->>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
         <div className="relative w-full h-48">
           <Image
             src={item.imageUrl}
             alt={item.name}
-<<<<<<< HEAD
-<<<<<<< HEAD
             fill // Changed from layout="fill" objectFit="cover" for Next 13+
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Example sizes, adjust as needed
             style={{ objectFit: 'cover' }} // Replaces objectFit prop
@@ -42,40 +32,22 @@ export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) 
           />
         </div>
       ) : (
-        <div className="relative w-full h-48 bg-muted flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">No image</p>
-        </div>
-=======
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint={item.dataAiHint || item.category.toLowerCase()}
-          />
-        </div>
->>>>>>> 633c2f0 (Updated app)
-=======
-            fill // Changed from layout="fill" objectFit="cover" for Next 13+
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Example sizes, adjust as needed
-            style={{ objectFit: 'cover' }} // Replaces objectFit prop
-            data-ai-hint={item.dataAiHint || item.category.toLowerCase()}
-          />
-        </div>
-      ) : (
-        <div className="relative w-full h-48 bg-muted flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">No image</p>
+        <div className="relative w-full h-36 bg-muted flex items-center justify-center"> {/* Reduced height */}
+          <p className="text-xs text-muted-foreground">No image</p> {/* Adjusted text size */}
         </div>
 >>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
       )}
-      <CardHeader>
-        <CardTitle className="font-headline text-xl">{item.name}</CardTitle>
-        <CardDescription className="text-muted-foreground text-sm">{item.category}</CardDescription>
+      <CardHeader className="p-3"> {/* Reduced padding */}
+        <CardTitle className="font-headline text-base leading-tight">{item.name}</CardTitle> {/* Reduced font size, adjusted leading */}
+        <CardDescription className="text-muted-foreground text-xs">{item.category}</CardDescription> {/* Reduced font size */}
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-sm">{item.description}</p>
+      <CardContent className="p-3 pt-0 flex-grow"> {/* Reduced padding */}
+        <p className="text-xs text-muted-foreground line-clamp-3">{item.description}</p> {/* Reduced font size, added line-clamp */}
       </CardContent>
-      <CardFooter className="flex justify-between items-center pt-4">
-        <p className="text-lg font-semibold text-primary">${item.price.toFixed(2)}</p>
-        <Button onClick={() => onAddToOrder(item)} size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10">
-          <PlusCircle size={18} className="mr-2" />
+      <CardFooter className="p-3 pt-2 flex justify-between items-center"> {/* Reduced padding */}
+        <p className="text-md font-semibold text-primary">${item.price.toFixed(2)}</p> {/* Reduced font size */}
+        <Button onClick={() => onAddToOrder(item)} size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-xs px-2 py-1 h-auto"> {/* Made button smaller */}
+          <PlusCircle size={14} className="mr-1" /> {/* Adjusted icon size */}
           Add
         </Button>
       </CardFooter>
