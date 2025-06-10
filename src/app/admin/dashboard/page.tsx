@@ -15,6 +15,7 @@ import { Pie, PieChart as RechartsPieChart, Cell } from "recharts";
 import { Separator } from '@/components/ui/separator';
 import * as xlsx from 'xlsx';
 import { format } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
 
 const COLORS_STATUS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF5733'];
 const COLORS_TYPE = ['#A0E7E5', '#FBE7C6', '#86E3CE'];
@@ -23,6 +24,7 @@ const COLORS_TYPE = ['#A0E7E5', '#FBE7C6', '#86E3CE'];
 export default function AdminDashboardPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast(); // Moved useToast hook call inside the component
 
   useEffect(() => {
     if (!authIsLoading && !user) {
@@ -252,5 +254,4 @@ export default function AdminDashboardPage() {
 
 // Helper for toast, in case it's not globally available or you want a local instance
 // This can be removed if useToast is already imported and configured project-wide
-import { useToast } from "@/hooks/use-toast";
-const { toast } = useToast();
+// const { toast } = useToast(); // This line was causing the error and has been moved into the component
