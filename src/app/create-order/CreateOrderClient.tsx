@@ -39,40 +39,40 @@ export default function CreateOrderClient() {
 
   useEffect(() => {
     if (!authIsLoading && !user) {
-      router.replace('/'); // Redirect to login if not authenticated
+      router.replace('/'); 
     }
   }, [user, authIsLoading, router]);
 
   useEffect(() => {
-    if (user) { // Only fetch if user is authenticated
-      async function fetchMenuItems() {
-        setMenuLoading(true);
-        setMenuError(null);
-        try {
-          const response = await fetch('/api/menu');
-          if (!response.ok) {
-            throw new Error(`Failed to fetch menu: ${response.statusText}`);
-          }
-          const data: MenuItem[] = await response.json();
-          setMenuItems(data);
-        } catch (error) {
-          console.error("Error fetching menu items:", error);
-          setMenuError(error instanceof Error ? error.message : "An unknown error occurred while fetching the menu.");
-          toast({
-            title: "Error Loading Menu",
-            description: "Could not load menu items. Please try again later.",
-            variant: "destructive",
-          });
-        } finally {
-          setMenuLoading(false);
+    async function fetchUserMenuItems(userId: string) {
+      setMenuLoading(true);
+      setMenuError(null);
+      try {
+        const response = await fetch(`/api/menu?userId=${encodeURIComponent(userId)}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch menu for ${userId}: ${response.statusText}`);
         }
+        const data: MenuItem[] = await response.json();
+        setMenuItems(data);
+      } catch (error) {
+        console.error("Error fetching menu items:", error);
+        setMenuError(error instanceof Error ? error.message : "An unknown error occurred while fetching the menu.");
+        toast({
+          title: "Error Loading Menu",
+          description: "Could not load menu items. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setMenuLoading(false);
       }
+    }
 
-      fetchMenuItems();
+    if (!authIsLoading && user && user.email) {
+      fetchUserMenuItems(user.email);
 
       const editOrderId = searchParams.get('edit');
       if (editOrderId) {
-        const orderToEdit = mockOrders.find(o => o.id === editOrderId && o.userId === user.email); // Ensure user owns the order
+        const orderToEdit = mockOrders.find(o => o.id === editOrderId && o.userId === user.email);
         if (orderToEdit) {
           setIsEditing(editOrderId);
           setOrderType(orderToEdit.type);
@@ -81,11 +81,17 @@ export default function CreateOrderClient() {
           toast({ title: "Editing Order", description: `You are now editing order ${editOrderId}.`});
         } else {
           toast({ title: "Error", description: `Order ${editOrderId} not found or you don't have permission to edit it.`, variant: "destructive"});
-          router.replace('/create-order'); // Go back to clean create order page
+          router.replace('/create-order');
         }
       }
+    } else if (authIsLoading) {
+      setMenuLoading(true); // Show loading state for menu while auth is resolving
+    } else if (!authIsLoading && !user) {
+      // This case should be covered by the redirection useEffect, but as a fallback:
+      setMenuItems([]);
+      setMenuLoading(false);
     }
-  }, [searchParams, toast, user, router]);
+  }, [searchParams, toast, user, router, authIsLoading]);
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
     setCurrentOrderItems(prevItems => {
@@ -158,14 +164,14 @@ export default function CreateOrderClient() {
       totalCost: totalPrice,
       status: 'pending',
       createdAt: new Date().toISOString(),
-      userId: user.email, // Tag order with user's email
+      userId: user.email, 
     };
 
     console.log('Order Submitted:', newOrder);
 
     if(isEditing) {
       const index = mockOrders.findIndex(o => o.id === isEditing && o.userId === user.email);
-      if(index !== -1) mockOrders[index] = newOrder; else mockOrders.push(newOrder); // Should ideally not push if edit target not found
+      if(index !== -1) mockOrders[index] = newOrder; else mockOrders.push(newOrder); 
     } else {
        mockOrders.unshift(newOrder);
     }
@@ -258,7 +264,7 @@ export default function CreateOrderClient() {
   };
 
 
-  if (authIsLoading || !user) {
+  if (authIsLoading || !user && !authIsLoading) { // Adjusted condition to show loader until auth is resolved AND user is checked
     return (
       <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -310,6 +316,9 @@ export default function CreateOrderClient() {
           </AlertDescription>
         </Alert>
       );
+    }
+    if (!menuItems || menuItems.length === 0) {
+        return <p className="text-muted-foreground">No menu items available for you yet. Add some items via "Manage Menu".</p>;
     }
     return <MenuList menuItems={menuItems} onAddToOrder={handleAddToOrder} />;
   };
@@ -409,3 +418,5 @@ export default function CreateOrderClient() {
     </AppLayout>
   );
 }
+
+    
