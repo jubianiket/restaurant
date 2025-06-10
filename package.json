@@ -51,12 +51,6 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "xlsx": "^0.18.5",
-=======
->>>>>>> 7d3cda9 (initial scaffold)
-=======
     "xlsx": "^0.18.5",
 >>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
     "zod": "^3.24.2"

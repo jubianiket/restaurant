@@ -35,6 +35,7 @@ export default function CreateOrderPage() {
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [lastSubmittedOrder, setLastSubmittedOrder] = useState<Order | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [isSendingSms, setIsSendingSms] = useState(false);
 
   useEffect(() => {
     if (!authIsLoading && !user) {
@@ -190,7 +191,7 @@ export default function CreateOrderPage() {
     toast({ title: "New Order Started", description: "Please fill in the details for your new order."});
   }
 
-  const handleSendSmsConfirmation = (order: Order | null) => {
+  const handleSendSmsConfirmation = async (order: Order | null) => {
     if (!order) return;
 
     if (!order.customerDetails.phone) {
@@ -201,14 +202,56 @@ export default function CreateOrderPage() {
       });
       return;
     }
+    // Basic validation for E.164 format, though server should ideally handle more robust validation
+    // Twilio generally expects E.164 format: +[country code][subscriber number including area code]
+    // For example: +15551234567 for a US number.
+    // For simplicity, let's assume the user enters it in a way Twilio might accept or we adjust it.
+    // It's better to enforce E.164 input or transform it.
+    let recipientPhoneNumber = order.customerDetails.phone;
+    if (!recipientPhoneNumber.startsWith('+')) {
+        // This is a very basic attempt to prepend + if missing.
+        // You might need more sophisticated logic depending on expected input formats.
+        // For many countries, just adding + might not be enough (e.g. if country code is missing)
+        // For Twilio in US/Canada, it might work without +1 if the 'from' number is US/Canadian.
+        // But for international, E.164 is crucial.
+        // Example: if user enters '5551234567', and it's a US number, it should be '+15551234567'
+        // For this example, we'll send as is if not starting with '+', or you can try to prefix.
+        // toast({ title: "Phone Number Format", description: "For best results, enter phone number in E.164 format (e.g., +15551234567).", variant: "default"});
+    }
 
-    const smsMessage = `Simulating SMS to ${order.customerDetails.phone}: Your Foodie Order ${order.id} for Rs.${order.totalCost.toFixed(2)} has been placed. Thank you!`;
-    console.log(smsMessage);
 
-    toast({
-      title: "SMS Simulated",
-      description: `Confirmation for order ${order.id} 'sent' to ${order.customerDetails.phone}.`,
-    });
+    setIsSendingSms(true);
+    try {
+      const smsMessage = `Your Foodie Order ${order.id} for Rs.${order.totalCost.toFixed(2)} has been placed. Items: ${order.items.map(i => i.name).join(', ')}. Thank you!`;
+      
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ to: recipientPhoneNumber, body: smsMessage }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: "SMS Sent!",
+          description: `Order confirmation SMS sent to ${order.customerDetails.phone}. SID: ${result.messageSid}`,
+        });
+      } else {
+        throw new Error(result.message || 'Failed to send SMS');
+      }
+    } catch (error) {
+      console.error("SMS sending error:", error);
+      toast({
+        title: "SMS Sending Failed",
+        description: (error instanceof Error ? error.message : "Could not send SMS. Please check server logs and Twilio configuration."),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingSms(false);
+    }
   };
 
 
@@ -298,10 +341,17 @@ export default function CreateOrderPage() {
                   onClick={() => handleSendSmsConfirmation(lastSubmittedOrder)} 
                   variant="outline" 
                   className="border-blue-600 text-blue-700 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-300 dark:hover:bg-blue-800"
-                  disabled={!lastSubmittedOrder.customerDetails.phone}
+                  disabled={!lastSubmittedOrder.customerDetails.phone || isSendingSms}
                 >
-                  <MessageSquareText size={16} className="mr-2" />
-                  Send SMS Confirmation
+                  {isSendingSms ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" /> Sending...
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquareText size={16} className="mr-2" /> Send SMS Confirmation
+                    </>
+                  )}
                 </Button>
               </div>
             </AlertDescription>
@@ -356,4 +406,3 @@ export default function CreateOrderPage() {
     </AppLayout>
   );
 }
-
