@@ -196,7 +196,7 @@ export default function CreateOrderPage() {
 
     if (!order.customerDetails.phone) {
       toast({
-        title: "Cannot Simulate SMS",
+        title: "Cannot Send SMS",
         description: "No phone number provided for this order.",
         variant: "destructive",
       });
@@ -222,34 +222,39 @@ export default function CreateOrderPage() {
 
       if (!response.ok) {
         try {
-          const errorResult = await response.json();
-          errorMessageFromApi = errorResult.error || errorResult.message;
+          // Try to parse JSON error response from API
+          result = await response.json();
+          errorMessageFromApi = result.error || result.message;
         } catch (e) {
-          const statusText = response.statusText ? `: ${response.statusText}` : ' (Internal Server Error)';
+          // If response is not JSON or parsing fails
+          const statusText = response.statusText ? `: ${response.statusText}` : '';
           errorMessageFromApi = `Server responded with ${response.status}${statusText}`;
         }
         const finalErrorMessage = (errorMessageFromApi && errorMessageFromApi.trim() !== `Server responded with ${response.status}:` && !errorMessageFromApi.endsWith('(Internal Server Error)'))
                                   ? errorMessageFromApi 
-                                  : `Failed to simulate SMS. The server returned an error (status ${response.status}).`;
+                                  : `Failed to send SMS. The server returned an error (status ${response.status}). Please check server logs for details.`;
         throw new Error(finalErrorMessage);
       }
       
+      // If response.ok is true, expect valid JSON
       result = await response.json();
 
       if (result.success) {
         toast({
-          title: "SMS Simulated!",
-          description: `SMS to ${order.customerDetails.phone} was simulated. Message SID: ${result.messageSid}`,
+          title: "SMS Sent!",
+          description: `SMS to ${order.customerDetails.phone} was sent. Message SID: ${result.messageSid}`,
         });
       } else {
-        const detailedErrorMessage = result.error || result.message || 'Failed to simulate SMS (API returned error)';
+        // This case might be rare if !response.ok handles most API errors with JSON bodies.
+        // It's a fallback for successful HTTP status but logical failure in API response.
+        const detailedErrorMessage = result.error || result.message || 'Failed to send SMS (API returned error)';
         throw new Error(detailedErrorMessage);
       }
     } catch (error) {
-      console.error("SMS simulation error:", error);
+      console.error("SMS sending error:", error);
       toast({
-        title: "SMS Simulation Failed",
-        description: (error instanceof Error ? error.message : "Could not simulate SMS."),
+        title: "SMS Sending Failed",
+        description: (error instanceof Error ? error.message : "Could not send SMS."),
         variant: "destructive",
       });
     } finally {
@@ -348,11 +353,11 @@ export default function CreateOrderPage() {
                 >
                   {isSendingSms ? (
                     <>
-                      <Loader2 size={16} className="mr-2 animate-spin" /> Simulating...
+                      <Loader2 size={16} className="mr-2 animate-spin" /> Sending SMS...
                     </>
                   ) : (
                     <>
-                      <MessageSquareText size={16} className="mr-2" /> Simulate SMS Confirmation
+                      <MessageSquareText size={16} className="mr-2" /> Send SMS Confirmation
                     </>
                   )}
                 </Button>
@@ -409,5 +414,3 @@ export default function CreateOrderPage() {
     </AppLayout>
   );
 }
-
-      
