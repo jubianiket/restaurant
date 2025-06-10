@@ -226,10 +226,15 @@ export default function CreateOrderPage() {
           const errorResult = await response.json();
           errorMessageFromApi = errorResult.error || errorResult.message;
         } catch (e) {
-          // Failed to parse JSON, use statusText
-          errorMessageFromApi = `Server responded with ${response.status}: ${response.statusText}`;
+          // Failed to parse JSON, use statusText or a more generic message
+          const statusText = response.statusText ? `: ${response.statusText}` : ' (Internal Server Error)';
+          errorMessageFromApi = `Server responded with ${response.status}${statusText}`;
         }
-        throw new Error(errorMessageFromApi || 'Failed to send SMS due to server error.');
+        // Ensure a user-friendly message is thrown if specific details are lacking
+        const finalErrorMessage = (errorMessageFromApi && errorMessageFromApi.trim() !== `Server responded with ${response.status}:` && !errorMessageFromApi.endsWith('(Internal Server Error)'))
+                                  ? errorMessageFromApi 
+                                  : `Failed to send SMS. The server returned an error (status ${response.status}). Please check server logs for details.`;
+        throw new Error(finalErrorMessage);
       }
       
       // If response.ok is true, expect valid JSON

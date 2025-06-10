@@ -30,8 +30,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Twilio phone number is not configured on the server.', error: 'TWILIO_PHONE_NUMBER is not set in .env.local.' }, { status: 503 });
   }
 
+  let requestBody;
   try {
-    const { to, body } = await request.json();
+    requestBody = await request.json();
+    const { to, body } = requestBody;
 
     if (!to || !body) {
       return NextResponse.json({ message: 'Missing "to" (phone number) or "body" (message content).', error: 'Request body must contain "to" and "body".' }, { status: 400 });
@@ -54,33 +56,53 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, messageSid: message.sid, message: 'SMS sent successfully!' });
 
   } catch (error) {
-    console.error('Failed to send SMS via Twilio:', error);
-    let errorMessage = 'An unknown error occurred while sending SMS.';
-    let statusCode = 500;
+    console.error('Failed to send SMS via Twilio API route:', error);
+    
+    let responseErrorMessage = 'An unknown error occurred while sending SMS.';
+    let responseStatusCode = 500;
 
-    if (error instanceof Error) {
-        const twilioError = error as any; // Cast to any to check for Twilio-specific properties
+    try {
+      // Try to get more specific error details
+      if (error instanceof Error) {
+        const twilioError = error as any; // Type assertion for Twilio-specific properties
         
         if (twilioError.code) { // Twilio errors usually have a code
-            errorMessage = `Twilio Error (Code ${twilioError.code}): ${twilioError.message}`;
-            statusCode = typeof twilioError.status === 'number' && twilioError.status >= 400 && twilioError.status < 600 ? twilioError.status : 400;
+            responseErrorMessage = `Twilio Error (Code ${twilioError.code}): ${twilioError.message}`;
+            // Ensure statusCode is a valid HTTP error code from Twilio's status, or default
+            responseStatusCode = typeof twilioError.status === 'number' && twilioError.status >= 400 && twilioError.status < 600 
+                               ? twilioError.status 
+                               : (twilioError.code === 20003 ? 401 : 400); // 20003 is auth error
 
-            if (twilioError.code === 21606) { // 'From' phone number is not a valid, SMS-capable Twilio phone number
-                 errorMessage = `Twilio Error: '${twilioPhoneNumber}' is not a valid Twilio 'From' number or cannot send SMS. Please check your TWILIO_PHONE_NUMBER in .env.local and your Twilio account settings.`;
-            } else if (twilioError.code === 21211) { // Invalid 'To' Phone Number
-                 errorMessage = `Twilio Error: The recipient phone number ('${to}') is invalid. Ensure it's in E.164 format (e.g., +12223334444).`;
-            } else if (twilioError.code === 21614) { // 'To' number is not SMS capable
-                 errorMessage = `Twilio Error: The recipient phone number ('${to}') is not SMS-capable.`;
+            // Specific error messages based on Twilio codes
+            if (twilioError.code === 21606) { 
+                 responseErrorMessage = `Twilio Configuration Error: The 'From' number ('${twilioPhoneNumber}') is not a valid Twilio number or cannot send SMS. Please check your TWILIO_PHONE_NUMBER in .env.local and your Twilio account settings.`;
+            } else if (twilioError.code === 21211 && twilioError.message.includes("'To'")) {
+                 const toParam = requestBody?.to || 'the recipient'; 
+                 responseErrorMessage = `Twilio Validation Error: The recipient phone number ('${toParam}') is invalid. Ensure it's in E.164 format (e.g., +12223334444).`;
+            } else if (twilioError.code === 21614) {
+                 const toParam = requestBody?.to || 'the recipient';
+                 responseErrorMessage = `Twilio Capability Error: The recipient phone number ('${toParam}') is not SMS-capable.`;
             } else if (twilioError.code === 20003) { // Auth error
-                 errorMessage = `Twilio Authentication Error: Please check your TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env.local.`;
-                 statusCode = 401; // Unauthorized
+                 responseErrorMessage = `Twilio Authentication Error: Please check your TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env.local.`;
+                 responseStatusCode = 401; 
             }
         } else {
-            // Not a standard Twilio error with a code, use the generic message
-            errorMessage = error.message;
+            // Not a standard Twilio error with a code, use the generic message from the Error object
+            responseErrorMessage = error.message || 'Failed to send SMS due to an unexpected error.';
         }
+      } else if (typeof error === 'string') {
+        responseErrorMessage = error;
+      } else {
+        // If error is not an instance of Error or string, use a very generic message
+        responseErrorMessage = 'An non-standard error object was thrown during SMS processing.';
+      }
+    } catch (processingError) {
+      // If error processing itself fails, log it and fall back to an even more generic message
+      console.error('Critical error during SMS error handling in API route:', processingError);
+      responseErrorMessage = 'A critical internal server error occurred while attempting to handle an SMS sending error.';
+      responseStatusCode = 500;
     }
     
-    return NextResponse.json({ message: 'Failed to send SMS.', error: errorMessage }, { status: statusCode });
+    return NextResponse.json({ message: 'Failed to send SMS.', error: responseErrorMessage }, { status: responseStatusCode });
   }
 }
