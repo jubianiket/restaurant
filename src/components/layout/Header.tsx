@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { UtensilsCrossed, History, Home, Settings, UserPlus, LogIn, LogOut, UserCircle, Loader2 } from 'lucide-react';
+import { UtensilsCrossed, History, Home, Settings, UserPlus, LogIn, LogOut, UserCircle, Loader2, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +28,10 @@ export default function Header() {
               <Link href="/history" className="hover:text-accent flex items-center gap-1 text-sm md:text-base">
                 <History size={20} />
                 Order History
+              </Link>
+              <Link href="/admin/dashboard" className="hover:text-accent flex items-center gap-1 text-sm md:text-base">
+                <LayoutDashboard size={20} />
+                My Dashboard
               </Link>
               <Link href="/admin/menu" className="hover:text-accent flex items-center gap-1 text-sm md:text-base">
                 <Settings size={20} />
