@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -81,9 +82,7 @@
     --sidebar-border: 20 10% 12%;
     --sidebar-ring: 26 94.7% 48.4%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
@@ -103,7 +102,7 @@
 
   .no-print, .no-print *,
   header.app-header,
-  /* footer.app-footer, */ 
+  /* footer.app-footer, */
   nav,
   aside,
   form,
@@ -111,10 +110,10 @@
   .order-actions-footer {
     display: none !important;
   }
-  
+
   /* Explicitly hide buttons that are not meant for print */
-  button:not(.printable-button), 
-  input[type="button"]:not(.printable-button), 
+  button:not(.printable-button),
+  input[type="button"]:not(.printable-button),
   input[type="submit"]:not(.printable-button),
   a.button:not(.printable-button) {
     display: none !important;
@@ -122,14 +121,14 @@
 
   /* Ensure general non-essential interactive elements are hidden */
   input:not([type="text"]):not([readonly]), /* Allow readonly text inputs if they are part of the bill */
-  select, 
+  select,
   textarea {
     display: none !important;
   }
 
 
   /* Links that are not essential for printed bill */
-  a[href]:not([href^="#"]):not([href^="mailto:"]) { 
+  a[href]:not([href^="#"]):not([href^="mailto:"]) {
     display: none !important;
   }
 
