@@ -13,9 +13,16 @@ const menuItemSchema = z.object({
   dataAiHint: z.string().optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const menuItems = getMenuItems();
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+    }
+
+    const menuItems = getMenuItems(userId);
     return NextResponse.json(menuItems);
   } catch (error) {
     console.error("Failed to fetch menu items for admin:", error);
@@ -26,14 +33,22 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parseResult = menuItemSchema.safeParse(body);
+    // userId is now expected to be part of the top-level body, not menuItemData
+    const { userId, ...menuItemData } = body;
+
+    if (!userId) {
+      return NextResponse.json({ message: "User ID is required for adding an item" }, { status: 400 });
+    }
+
+    const parseResult = menuItemSchema.safeParse(menuItemData);
 
     if (!parseResult.success) {
       return NextResponse.json({ message: "Invalid menu item data", errors: parseResult.error.flatten().fieldErrors }, { status: 400 });
     }
     
     const newItemData = parseResult.data;
-    const createdItem = addMenuItem(newItemData);
+    // Pass userId explicitly to addMenuItem
+    const createdItem = addMenuItem(newItemData, userId as string);
     return NextResponse.json(createdItem, { status: 201 });
   } catch (error) {
     console.error("Failed to create menu item:", error);

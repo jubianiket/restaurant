@@ -7,6 +7,7 @@ export interface MenuItem {
   category: string;
   imageUrl?: string;
   dataAiHint?: string;
+  userId?: string; // Email of the user who owns the menu item
 }
 
 export type OrderType = 'delivery' | 'dine-in' | 'take-away';

@@ -13,7 +13,6 @@ const menuItemUpdateSchema = z.object({
   dataAiHint: z.string().optional(),
 });
 
-
 interface Params {
   params: { itemId: string };
 }
@@ -21,9 +20,16 @@ interface Params {
 export async function GET(request: Request, { params }: Params) {
   try {
     const { itemId } = params;
-    const menuItem = getMenuItemById(itemId);
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+    }
+
+    const menuItem = getMenuItemById(itemId, userId);
     if (!menuItem) {
-      return NextResponse.json({ message: "Menu item not found" }, { status: 404 });
+      return NextResponse.json({ message: "Menu item not found or you don't have permission" }, { status: 404 });
     }
     return NextResponse.json(menuItem);
   } catch (error) {
@@ -36,17 +42,23 @@ export async function PUT(request: Request, { params }: Params) {
   try {
     const { itemId } = params;
     const body = await request.json();
-    const parseResult = menuItemUpdateSchema.safeParse(body);
+    const { userId, ...updatedItemDataFromRequest } = body;
+
+    if (!userId) {
+      return NextResponse.json({ message: "User ID is required for updating an item" }, { status: 400 });
+    }
+
+    const parseResult = menuItemUpdateSchema.safeParse(updatedItemDataFromRequest);
 
     if (!parseResult.success) {
       return NextResponse.json({ message: "Invalid menu item data for update", errors: parseResult.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const updatedItemData = parseResult.data;
-    const updatedItem = updateMenuItem(itemId, updatedItemData);
+    const validatedData = parseResult.data;
+    const updatedItem = updateMenuItem(itemId, validatedData, userId as string);
 
     if (!updatedItem) {
-      return NextResponse.json({ message: "Menu item not found for update" }, { status: 404 });
+      return NextResponse.json({ message: "Menu item not found for update or you don't have permission" }, { status: 404 });
     }
     return NextResponse.json(updatedItem);
   } catch (error) {
@@ -58,9 +70,16 @@ export async function PUT(request: Request, { params }: Params) {
 export async function DELETE(request: Request, { params }: Params) {
   try {
     const { itemId } = params;
-    const success = deleteMenuItem(itemId);
+    const { searchParams } = new URL(request.url); // userId from query params for DELETE
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json({ message: "User ID is required for deleting an item" }, { status: 400 });
+    }
+
+    const success = deleteMenuItem(itemId, userId);
     if (!success) {
-      return NextResponse.json({ message: "Menu item not found for deletion" }, { status: 404 });
+      return NextResponse.json({ message: "Menu item not found for deletion or you don't have permission" }, { status: 404 });
     }
     return NextResponse.json({ message: "Menu item deleted successfully" }, { status: 200 });
   } catch (error) {

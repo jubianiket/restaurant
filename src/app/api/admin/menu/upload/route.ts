@@ -1,16 +1,20 @@
 
 import { NextResponse } from 'next/server';
 import * as xlsx from 'xlsx';
-import { replaceMenuItems } from '@/lib/menuService';
+import { replaceMenuItemsForUser } from '@/lib/menuService'; // Updated function name
 import type { MenuItem } from '@/types';
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
+    const userId = formData.get('userId') as string | null;
 
     if (!file) {
       return NextResponse.json({ message: 'No file uploaded' }, { status: 400 });
+    }
+    if (!userId) {
+      return NextResponse.json({ message: 'User ID is required for upload' }, { status: 400 });
     }
 
     if (file.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' && file.type !== 'application/vnd.ms-excel') {
@@ -28,7 +32,7 @@ export async function POST(request: Request) {
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(worksheet) as any[];
 
-    const newMenuItems: MenuItem[] = [];
+    const newMenuItemsData: Omit<MenuItem, 'id' | 'userId'>[] = [];
     const errors: string[] = [];
 
     jsonData.forEach((row, index) => {
@@ -42,19 +46,19 @@ export async function POST(request: Request) {
 
       if (!name) {
         errors.push(`Row ${index + 2}: Name is missing or invalid.`);
-        return; // skip this row
+        return;
       }
       if (isNaN(price) || price <= 0) {
         errors.push(`Row ${index + 2} (Item: ${name}): Price is missing, zero, or invalid ('${priceStr}'). Must be a positive number.`);
-        return; // skip this row
+        return;
       }
       if (!category) {
         errors.push(`Row ${index + 2} (Item: ${name}): Category is missing or invalid.`);
-        return; // skip this row
+        return;
       }
 
-      newMenuItems.push({
-        id: `XLSX-${Date.now()}-${index}`, // Generate new IDs for items from Excel
+      // Don't include id or userId here, service will handle it
+      newMenuItemsData.push({
         name,
         description,
         price,
@@ -64,27 +68,26 @@ export async function POST(request: Request) {
       });
     });
 
-    if (errors.length > 0 && newMenuItems.length === 0) { // Only fail if all rows had errors
+    if (errors.length > 0 && newMenuItemsData.length === 0) {
       return NextResponse.json({ 
         message: 'Error processing Excel file. No valid items found.', 
         errors 
       }, { status: 400 });
     }
     
-    if (newMenuItems.length === 0 && jsonData.length > 0 && errors.length === 0) {
+    if (newMenuItemsData.length === 0 && jsonData.length > 0 && errors.length === 0) {
          return NextResponse.json({ message: 'No menu items found in the Excel file, or columns are misnamed. Expected columns: Name, Price, Category, Description (optional), ImageUrl (optional), DataAiHint (optional).' }, { status: 400 });
     }
-    if (newMenuItems.length === 0 && jsonData.length === 0) {
+    if (newMenuItemsData.length === 0 && jsonData.length === 0) {
         return NextResponse.json({ message: 'Excel file is empty or has no data rows.' }, { status: 400 });
     }
 
-
-    replaceMenuItems(newMenuItems); // Replace all existing items
+    const processedItems = replaceMenuItemsForUser(newMenuItemsData, userId);
 
     return NextResponse.json({ 
-        message: `Menu items uploaded successfully. ${newMenuItems.length} items processed.`, 
-        count: newMenuItems.length,
-        warnings: errors.length > 0 ? errors : undefined // Return errors as warnings if some items were still processed
+        message: `Menu items for user ${userId} uploaded successfully. ${processedItems.length} items processed.`, 
+        count: processedItems.length,
+        warnings: errors.length > 0 ? errors : undefined
     });
 
   } catch (error) {

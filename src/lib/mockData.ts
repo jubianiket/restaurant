@@ -1,5 +1,7 @@
 import type { MenuItem, Order, OrderItem, CustomerDetails, OrderType } from '@/types';
 
+const DEMO_USER_ID = "admin@example.com"; // Default user for initial mock data
+
 export const mockMenuItems: MenuItem[] = [
   {
     id: '1',
@@ -9,6 +11,7 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Pizza',
     imageUrl: 'https://placehold.co/600x400.png',
     dataAiHint: 'pizza margherita',
+    userId: DEMO_USER_ID,
   },
   {
     id: '2',
@@ -18,6 +21,7 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Pizza',
     imageUrl: 'https://placehold.co/600x400.png',
     dataAiHint: 'pizza pepperoni',
+    userId: DEMO_USER_ID,
   },
   {
     id: '3',
@@ -27,6 +31,7 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Salads',
     imageUrl: 'https://placehold.co/600x400.png',
     dataAiHint: 'caesar salad',
+    userId: DEMO_USER_ID,
   },
   {
     id: '4',
@@ -36,6 +41,7 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Pasta',
     imageUrl: 'https://placehold.co/600x400.png',
     dataAiHint: 'spaghetti carbonara',
+    userId: DEMO_USER_ID,
   },
   {
     id: '5',
@@ -45,6 +51,7 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Burgers',
     imageUrl: 'https://placehold.co/600x400.png',
     dataAiHint: 'cheeseburger fries',
+    userId: DEMO_USER_ID,
   },
   {
     id: '6',
@@ -54,12 +61,16 @@ export const mockMenuItems: MenuItem[] = [
     category: 'Drinks',
     imageUrl: 'https://placehold.co/300x300.png',
     dataAiHint: 'coca cola',
+    userId: DEMO_USER_ID,
   },
 ];
 
-const generateMockOrderItems = (count: number): OrderItem[] => {
+const generateMockOrderItems = (count: number, userId: string): OrderItem[] => {
   const items: OrderItem[] = [];
-  const availableItems = [...mockMenuItems];
+  // Filter available items by userId, or use all if no specific items for this user
+  const userSpecificMenuItems = mockMenuItems.filter(item => item.userId === userId);
+  const availableItems = userSpecificMenuItems.length > 0 ? [...userSpecificMenuItems] : [...mockMenuItems];
+
   for (let i = 0; i < count; i++) {
     if (availableItems.length === 0) break;
     const randomIndex = Math.floor(Math.random() * availableItems.length);
@@ -74,7 +85,7 @@ const generateMockOrderItems = (count: number): OrderItem[] => {
 
 const mockCustomerDetails = (): CustomerDetails[] => [
   { name: 'Alice Smith', phone: '555-0101', address: '123 Main St, Anytown, USA' },
-  { name: 'Bob Johnson', phone: '555-0102' }, // No address for dine-in/take-away
+  { name: 'Bob Johnson', phone: '555-0102' },
   { name: 'Charlie Brown', phone: '555-0103', address: '456 Oak Ave, Anytown, USA' },
 ];
 
@@ -83,7 +94,8 @@ const orderStatuses: Order['status'][] = ['completed', 'pending', 'confirmed', '
 
 
 export const mockOrders: Order[] = Array.from({ length: 5 }, (_, i) => {
-  const items = generateMockOrderItems(Math.floor(Math.random() * 3) + 1);
+  const assignedUserId = DEMO_USER_ID; // Assign initial mock orders to the demo admin
+  const items = generateMockOrderItems(Math.floor(Math.random() * 3) + 1, assignedUserId);
   const totalCost = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const customer = mockCustomerDetails()[i % mockCustomerDetails().length];
   const type = orderTypes[i % orderTypes.length];
@@ -99,5 +111,6 @@ export const mockOrders: Order[] = Array.from({ length: 5 }, (_, i) => {
     totalCost,
     status: orderStatuses[i % orderStatuses.length],
     createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+    userId: assignedUserId,
   };
 });
