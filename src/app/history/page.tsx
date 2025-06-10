@@ -11,35 +11,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit3, History as HistoryIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OrderHistoryPage() {
-  // Use state to reflect updates if orders are added/modified via page.tsx
   const [orders, setOrders] = useState<Order[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, orders would be fetched. Here, we use mockOrders.
-    // The mockOrders array can be mutated by page.tsx, so we copy it.
-    setOrders([...initialMockOrders]); 
+    setOrders([...initialMockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
   }, []);
 
 
-  const getStatusVariant = (status: Order['status']): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case 'completed':
-      case 'delivered':
-        return 'default'; // Using primary color for success
-      case 'pending':
-      case 'confirmed':
-      case 'preparing':
-      case 'ready':
-        return 'secondary'; // Using accent color (yellow)
-      case 'cancelled':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  };
-  
   const getStatusBadgeClass = (status: Order['status']): string => {
     switch (status) {
       case 'completed':
@@ -57,6 +40,26 @@ export default function OrderHistoryPage() {
         return 'bg-gray-500 text-white';
     }
   }
+
+  const handleUpdateOrderStatus = (orderId: string, newStatus: Order['status']) => {
+    // Update mockOrders (initialMockOrders)
+    const orderInMock = initialMockOrders.find(o => o.id === orderId);
+    if (orderInMock) {
+      orderInMock.status = newStatus;
+    }
+
+    // Update local state for UI re-render
+    setOrders(prevOrders =>
+      prevOrders.map(o =>
+        o.id === orderId ? { ...o, status: newStatus } : o
+      ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    );
+
+    toast({
+      title: "Order Status Updated",
+      description: `Order ${orderId} status changed to ${newStatus}.`,
+    });
+  };
 
 
   return (
@@ -77,7 +80,7 @@ export default function OrderHistoryPage() {
                   <TableHead>Customer</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="w-[180px]">Status</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -90,7 +93,30 @@ export default function OrderHistoryPage() {
                     <TableCell className="capitalize">{order.type}</TableCell>
                     <TableCell className="text-right">Rs.{order.totalCost.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge className={getStatusBadgeClass(order.status)}>{order.status}</Badge>
+                      {order.status === 'cancelled' || order.status === 'delivered' ? (
+                        <Badge className={`${getStatusBadgeClass(order.status)} capitalize`}>{order.status}</Badge>
+                      ) : (
+                        <Select
+                          value={order.status}
+                          onValueChange={(newStatusValue) => {
+                            handleUpdateOrderStatus(order.id, newStatusValue as Order['status']);
+                          }}
+                        >
+                          <SelectTrigger className="w-full min-w-[120px] max-w-[150px] text-xs capitalize h-8">
+                            <SelectValue placeholder="Set status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending" className="text-xs">Pending</SelectItem>
+                            <SelectItem value="completed" className="text-xs">Completed</SelectItem>
+                            {order.status !== 'pending' &&
+                             order.status !== 'completed' &&
+                             order.status !== 'cancelled' &&
+                             order.status !== 'delivered' && (
+                              <SelectItem value={order.status} className="text-xs capitalize">{order.status}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </TableCell>
                     <TableCell className="text-center space-x-2">
                       <Button asChild variant="outline" size="sm">
