@@ -1,6 +1,7 @@
 
 "use client";
 
+import type { StoredUser } from '@/types';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,13 @@ import Link from 'next/link';
 import { UserPlus, Mail, KeyRound, Loader2 } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useRouter } from 'next/navigation';
+
+const USERS_STORAGE_KEY = 'foodieRegisteredUsers';
+
+// Basic pseudo-hashing for demonstration. DO NOT USE IN PRODUCTION.
+const pseudoHashPassword = (password: string): string => {
+  return `hashed_${password}_${password.split('').reverse().join('')}`;
+};
 
 export default function SignUpPage() {
   const { toast } = useToast();
@@ -26,7 +34,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (!authIsLoading && user) {
-      router.replace('/create-order'); // Redirect if already logged in
+      router.replace('/create-order'); 
     }
   }, [user, authIsLoading, router]);
 
@@ -66,16 +74,48 @@ export default function SignUpPage() {
     }
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    console.log('Sign Up Data:', { name, email, password }); // In a real app, send this to your backend
-    toast({
-      title: "Sign Up Successful!",
-      description: "Welcome! Please log in with your new account.",
-    });
-    
-    setIsSubmitting(false);
-    router.push('/'); // Redirect to login page after successful signup
+    try {
+      const existingUsersString = localStorage.getItem(USERS_STORAGE_KEY);
+      const existingUsers: StoredUser[] = existingUsersString ? JSON.parse(existingUsersString) : [];
+
+      if (existingUsers.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
+        toast({
+          title: "Email Exists",
+          description: "This email address is already registered. Please use a different email or log in.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const passwordHash = pseudoHashPassword(password);
+
+      const newUser: StoredUser = { 
+        name: name.trim(), 
+        email: email.trim().toLowerCase(), 
+        passwordHash 
+      };
+      existingUsers.push(newUser);
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(existingUsers));
+
+      toast({
+        title: "Sign Up Successful!",
+        description: "Welcome! Please log in with your new account.",
+      });
+      
+      router.push('/'); 
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Sign Up Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   if (authIsLoading || (!authIsLoading && user)) {

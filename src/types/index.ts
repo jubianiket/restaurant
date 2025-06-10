@@ -1,3 +1,4 @@
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -32,4 +33,9 @@ export interface Order {
 
 export interface AuthUser {
   email: string;
+  name?: string; // Add name to AuthUser
+}
+
+export interface StoredUser extends AuthUser {
+  passwordHash: string; // In a real app, this would be a hash
 }

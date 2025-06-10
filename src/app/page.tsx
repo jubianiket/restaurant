@@ -28,7 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { LogIn, Mail, KeyRound, Loader2, UserPlus } from 'lucide-react';
+import { LogIn, Mail, KeyRound, Loader2 } from 'lucide-react'; // Removed UserPlus as it's for signup
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useRouter } from 'next/navigation';
 
@@ -59,19 +59,13 @@ export default function LoginPage() {
       setIsSubmitting(false);
       return;
     }
-
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // login function now handles validation and redirection/toast internally
-    login(email, password);
     
-    // Set submitting to false only if login might fail and stay on page
-    // Since login handles redirection on success, this might not be needed if redirect always happens.
-    // However, if login fails, we want to re-enable the button.
-    // The login function in AuthContext will show a toast on failure.
-    // We assume login will either redirect or fail & show toast, so we can reset isSubmitting.
-     setTimeout(() => setIsSubmitting(false), 500); // Add a small delay to allow toast to show if login fails
+    // login function now handles validation and redirection/toast internally
+    login(email, password); // Password is now always passed
+    
+    // Set submitting to false after a delay to allow login logic (including toasts) to complete.
+    // If login is successful, redirection will occur. If not, button is re-enabled.
+    setTimeout(() => setIsSubmitting(false), 700); 
   };
 
   if (authIsLoading || (!authIsLoading && user)) {
@@ -89,7 +83,7 @@ export default function LoginPage() {
           <LogIn className="mx-auto h-10 w-10 text-primary mb-3" />
           <CardTitle className="text-2xl md:text-3xl font-headline">Welcome Back!</CardTitle>
           <CardDescription className="mt-1 text-muted-foreground">
-            Sign in to continue to Foodie Orders. (Hint: admin@example.com / password123)
+            Sign in to continue to Foodie Orders.
           </CardDescription>
         </CardHeader>
         <CardContent>
