@@ -2,6 +2,163 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: sans-serif;
+@layer base {
+  :root {
+    --background: 40 7.1% 94.9%; /* Light Beige (#F2EAD5) */
+    --foreground: 24 9.8% 10%; /* Default dark text */
+    --card: 40 7.1% 94.9%;
+    --card-foreground: 24 9.8% 10%;
+    --popover: 40 7.1% 94.9%;
+    --popover-foreground: 24 9.8% 10%;
+    --primary: 26 94.7% 48.4%; /* Saturated Orange (#F27405) */
+    --primary-foreground: 40 0% 100%; /* White for high contrast on orange */
+    --secondary: 40 60% 85%; /* Lighter, less saturated beige for secondary elements */
+    --secondary-foreground: 26 94.7% 48.4%;
+    --muted: 40 30% 88%;
+    --muted-foreground: 24 5.4% 45.9%;
+    --accent: 43 92.3% 46.9%; /* Mustard Yellow (#E5A808) */
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 10% 80%;
+    --input: 40 10% 75%;
+    --ring: 26 94.7% 48.4%;
+    --radius: 0.5rem;
+
+    /* Chart colors */
+    --chart-1: 26 90% 55%;
+    --chart-2: 43 85% 50%;
+    --chart-3: 180 50% 45%;
+    --chart-4: 0 70% 50%;
+    --chart-5: 260 60% 60%;
+
+    /* Sidebar specific colors */
+    --sidebar-background: 38 15% 90%; /* A slightly darker beige for sidebar */
+    --sidebar-foreground: 24 9.8% 20%;
+    --sidebar-primary: 26 94.7% 48.4%;
+    --sidebar-primary-foreground: 40 0% 100%;
+    --sidebar-accent: 43 92.3% 46.9%;
+    --sidebar-accent-foreground: 24 9.8% 10%;
+    --sidebar-border: 40 10% 78%;
+    --sidebar-ring: 26 94.7% 48.4%;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 26 94.7% 48.4%; /* Orange can work in dark mode too */
+    --primary-foreground: 40 0% 100%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 43 92.3% 46.9%; /* Mustard yellow can also work */
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 26 94.7% 48.4%;
+
+    /* Chart colors for dark mode */
+    --chart-1: 26 90% 65%;
+    --chart-2: 43 85% 60%;
+    --chart-3: 180 50% 55%;
+    --chart-4: 0 70% 60%;
+    --chart-5: 260 60% 70%;
+
+    /* Sidebar specific colors for dark mode */
+    --sidebar-background: 20 10% 8%; /* Darker shade for sidebar */
+    --sidebar-foreground: 60 9.1% 93%;
+    --sidebar-primary: 26 94.7% 48.4%;
+    --sidebar-primary-foreground: 40 0% 100%;
+    --sidebar-accent: 43 92.3% 46.9%;
+    --sidebar-accent-foreground: 60 9.1% 97.8%;
+    --sidebar-border: 20 10% 12%;
+    --sidebar-ring: 26 94.7% 48.4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    color: #000;
+    background-color: #fff;
+  }
+
+  .no-print, .no-print *,
+  header.app-header,
+  /* footer.app-footer, */ /* Intentionally commented out as per previous attempt */
+  nav,
+  aside,
+  form,
+  .sidebar-wrapper,
+  .order-actions-footer {
+    display: none !important;
+  }
+  
+  /* Explicitly hide buttons that are not meant for print */
+  button:not(.printable-button), 
+  input[type="button"]:not(.printable-button), 
+  input[type="submit"]:not(.printable-button),
+  a.button:not(.printable-button) {
+    display: none !important;
+  }
+
+  /* Ensure general non-essential interactive elements are hidden */
+  input:not([type="text"]):not([readonly]), /* Allow readonly text inputs if they are part of the bill */
+  select, 
+  textarea {
+    display: none !important;
+  }
+
+
+  /* Links that are not essential for printed bill */
+  a[href]:not([href^="#"]):not([href^="mailto:"]) { 
+    display: none !important;
+  }
+
+
+  .order-details-card, .order-details-card * {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important; /* Add simple border for clarity */
+  }
+  .order-details-card {
+    max-width: 100%;
+    width: 100%;
+    page-break-inside: avoid;
+  }
+
+  /* Make sure essential content is visible */
+  .printable-content, .printable-content * {
+    display: block !important; /* Or other appropriate display type */
+    visibility: visible !important;
+  }
+
+  /* Adjust spacing for print */
+  .container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  img {
+    max-width: 100% !important; /* Ensure images don't overflow */
+    page-break-inside: avoid;
+  }
 }
