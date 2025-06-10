@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { CustomerDetails, OrderType } from '@/types';
@@ -43,7 +44,7 @@ export default function CustomerDetailsForm({ details, onDetailsChange, orderTyp
             id="phone"
             name="phone"
             type="tel"
-            placeholder="Enter phone number"
+            placeholder="e.g., +12223334444 (E.164 format)"
             value={details.phone}
             onChange={handleChange}
             required
