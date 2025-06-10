@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import AppLayout from '@/components/layout/AppLayout';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,18 +10,30 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { UserPlus, Mail, KeyRound, Loader2 } from 'lucide-react';
+import AuthLayout from '@/components/auth/AuthLayout';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpPage() {
   const { toast } = useToast();
+  const router = useRouter();
+  const { user, isLoading: authIsLoading } = useAuth();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!authIsLoading && user) {
+      router.replace('/create-order'); // Redirect if already logged in
+    }
+  }, [user, authIsLoading, router]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     if (!name.trim() || !email.trim() || !password || !confirmPassword) {
       toast({
@@ -29,7 +41,7 @@ export default function SignUpPage() {
         description: "Please fill out all fields.",
         variant: "destructive",
       });
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
@@ -39,7 +51,7 @@ export default function SignUpPage() {
         description: "Passwords do not match.",
         variant: "destructive",
       });
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
     
@@ -49,10 +61,9 @@ export default function SignUpPage() {
         description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
-      setIsLoading(false);
+      setIsSubmitting(false);
       return;
     }
-
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -60,114 +71,114 @@ export default function SignUpPage() {
     console.log('Sign Up Data:', { name, email, password }); // In a real app, send this to your backend
     toast({
       title: "Sign Up Successful!",
-      description: "Welcome! You can now try logging in (login page not yet implemented).",
+      description: "Welcome! Please log in with your new account.",
     });
     
-    // Reset form 
-    setName('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setIsLoading(false);
-    // In a real app, you might redirect:
-    // router.push('/login'); 
+    setIsSubmitting(false);
+    router.push('/'); // Redirect to login page after successful signup
   };
+  
+  if (authIsLoading || (!authIsLoading && user)) {
+    return (
+      <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <AppLayout>
-      <div className="flex flex-grow items-center justify-center p-4 md:p-8 bg-gradient-to-br from-background to-muted/30">
-        <Card className="w-full max-w-md shadow-2xl bg-card/90 backdrop-blur-sm">
-          <CardHeader className="text-center">
-            <UserPlus className="mx-auto h-10 w-10 text-primary mb-3" />
-            <CardTitle className="text-2xl md:text-3xl font-headline">Create Your Account</CardTitle>
-            <CardDescription className="mt-1 text-muted-foreground">
-              Join Foodie Orders to start ordering your favorite meals quickly and easily.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="flex items-center text-sm">
-                  <UserPlus size={16} className="mr-2 opacity-70" /> Full Name
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="e.g., John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="text-base"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="flex items-center text-sm">
-                  <Mail size={16} className="mr-2 opacity-70" /> Email Address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="e.g., you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="text-base"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="flex items-center text-sm">
-                  <KeyRound size={16} className="mr-2 opacity-70" /> Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="•••••••• (min. 6 characters)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  disabled={isLoading}
-                  className="text-base"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" className="flex items-center text-sm">
-                  <KeyRound size={16} className="mr-2 opacity-70" /> Confirm Password
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  disabled={isLoading}
-                  className="text-base"
-                />
-              </div>
-              <Button type="submit" className="w-full py-3 text-base" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Creating Account...
-                  </>
-                ) : 'Create Account'}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col items-center pt-5">
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-primary hover:underline">
-                Log In
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-    </AppLayout>
+    <AuthLayout>
+      <Card className="w-full max-w-md shadow-2xl bg-card/95 backdrop-blur-sm">
+        <CardHeader className="text-center">
+          <UserPlus className="mx-auto h-10 w-10 text-primary mb-3" />
+          <CardTitle className="text-2xl md:text-3xl font-headline">Create Your Account</CardTitle>
+          <CardDescription className="mt-1 text-muted-foreground">
+            Join Foodie Orders to start ordering your favorite meals.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="flex items-center text-sm">
+                <UserPlus size={16} className="mr-2 opacity-70" /> Full Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="e.g., John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isSubmitting}
+                className="text-base"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="flex items-center text-sm">
+                <Mail size={16} className="mr-2 opacity-70" /> Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="e.g., you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isSubmitting}
+                className="text-base"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="flex items-center text-sm">
+                <KeyRound size={16} className="mr-2 opacity-70" /> Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="•••••••• (min. 6 characters)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                disabled={isSubmitting}
+                className="text-base"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="flex items-center text-sm">
+                <KeyRound size={16} className="mr-2 opacity-70" /> Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                disabled={isSubmitting}
+                className="text-base"
+              />
+            </div>
+            <Button type="submit" className="w-full py-3 text-base" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating Account...
+                </>
+              ) : 'Create Account'}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex flex-col items-center pt-5">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/" className="font-medium text-primary hover:underline">
+              Sign In
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </AuthLayout>
   );
 }

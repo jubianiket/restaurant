@@ -4,23 +4,35 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { mockOrders as initialMockOrders } from '@/lib/mockData'; // Renamed to avoid conflict
+import { mockOrders as initialMockOrders } from '@/lib/mockData';
 import type { Order } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit3, History as HistoryIcon } from 'lucide-react';
+import { Eye, Edit3, History as HistoryIcon, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function OrderHistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const { toast } = useToast();
+  const { user, isLoading: authIsLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    setOrders([...initialMockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-  }, []);
+    if (!authIsLoading && !user) {
+      router.replace('/'); // Redirect to login
+    }
+  }, [user, authIsLoading, router]);
+
+  useEffect(() => {
+    if (user) { // Only load orders if authenticated
+        setOrders([...initialMockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    }
+  }, [user]);
 
 
   const getStatusBadgeClass = (status: Order['status']): string => {
@@ -42,13 +54,11 @@ export default function OrderHistoryPage() {
   }
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    // Update mockOrders (initialMockOrders)
     const orderInMock = initialMockOrders.find(o => o.id === orderId);
     if (orderInMock) {
       orderInMock.status = newStatus;
     }
 
-    // Update local state for UI re-render
     setOrders(prevOrders =>
       prevOrders.map(o =>
         o.id === orderId ? { ...o, status: newStatus } : o
@@ -61,6 +71,13 @@ export default function OrderHistoryPage() {
     });
   };
 
+  if (authIsLoading || !user) {
+    return (
+      <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <AppLayout>
@@ -126,7 +143,7 @@ export default function OrderHistoryPage() {
                       </Button>
                       {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
                          <Button asChild variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
-                            <Link href={`/?edit=${order.id}`}>
+                            <Link href={`/create-order?edit=${order.id}`}>
                                <Edit3 size={16} className="mr-1" /> Edit
                             </Link>
                          </Button>

@@ -29,3 +29,7 @@ export interface Order {
   status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
   createdAt: string; // ISO date string
 }
+
+export interface AuthUser {
+  email: string;
+}

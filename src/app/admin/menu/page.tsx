@@ -1,13 +1,36 @@
 
+"use client";
+
 import AppLayout from '@/components/layout/AppLayout';
 import MenuItemsManager from '@/components/admin/menu/MenuItemsManager';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export const metadata = {
   title: 'Manage Menu - Foodie Orders',
 };
 
 export default function AdminMenuPage() {
+  const { user, isLoading: authIsLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authIsLoading && !user) {
+      router.replace('/'); // Redirect to login
+    }
+  }, [user, authIsLoading, router]);
+
+  if (authIsLoading || !user) {
+    return (
+      <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="container mx-auto p-4 md:p-8">
@@ -23,4 +46,3 @@ export default function AdminMenuPage() {
     </AppLayout>
   );
 }
-

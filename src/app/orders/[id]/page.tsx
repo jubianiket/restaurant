@@ -24,31 +24,33 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import PrintBillButton from '@/components/order/PrintBillButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, CalendarDays, Tag, FileText } from 'lucide-react';
+import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, CalendarDays, Tag, FileText, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-
+import { useAuth } from '@/hooks/useAuth';
 
 export default function OrderDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, isLoading: authIsLoading } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const id = params.id as string;
 
   useEffect(() => {
     if (id) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      // In a real app, fetch order by ID from a backend
->>>>>>> 633c2f0 (Updated app)
-=======
->>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
       const foundOrder = mockOrders.find(o => o.id === id);
       setOrder(foundOrder || null);
     }
-  }, [id]);
+  }, [id, user]);
+
+  if (authIsLoading || !user) {
+    return (
+      <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -191,7 +193,7 @@ export default function OrderDetailsPage() {
 >>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
             {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
               <Button asChild variant="default">
-                <Link href={`/?edit=${order.id}`}>
+                <Link href={`/create-order?edit=${order.id}`}>
                   <Edit3 size={18} className="mr-2" />
                   Edit Order
                 </Link>
