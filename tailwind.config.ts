@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -10,18 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-<<<<<<< HEAD
-<<<<<<< HEAD
         body: ['PT Sans', 'sans-serif'],
         headline: ['PT Sans', 'sans-serif'],
-=======
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
->>>>>>> 7d3cda9 (initial scaffold)
-=======
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['PT Sans', 'sans-serif'],
->>>>>>> 633c2f0 (Updated app)
         code: ['monospace'],
       },
       colors: {

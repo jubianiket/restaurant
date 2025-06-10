@@ -1,23 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { Suspense } from 'react';
-import OrderPage from './OrderPageInner';
 
-export default function PageWrapper() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-lg">Loading Order Page...</div>}>
-      <OrderPage />
-    </Suspense>
-  );
-=======
-export default function Home() {
-  return <></>;
->>>>>>> 7d3cda9 (initial scaffold)
-=======
-=======
-
->>>>>>> b395a2a (I see this error with the app, reported by NextJS, please fix it. The er)
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -28,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { LogIn, Mail, KeyRound, Loader2 } from 'lucide-react'; // Removed UserPlus as it's for signup
+import { LogIn, Mail, KeyRound, Loader2 } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useRouter } from 'next/navigation';
 
@@ -60,11 +41,8 @@ export default function LoginPage() {
       return;
     }
     
-    // login function now handles validation and redirection/toast internally
-    login(email, password); // Password is now always passed
+    login(email, password);
     
-    // Set submitting to false after a delay to allow login logic (including toasts) to complete.
-    // If login is successful, redirection will occur. If not, button is re-enabled.
     setTimeout(() => setIsSubmitting(false), 700); 
   };
 
@@ -139,5 +117,4 @@ export default function LoginPage() {
       </Card>
     </AuthLayout>
   );
->>>>>>> 633c2f0 (Updated app)
 }

@@ -13,14 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { Label } from '@/components/ui/label';
-=======
->>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
-=======
-import { Label } from '@/components/ui/label';
->>>>>>> 3a25f53 (Console Error)
 import { toast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Upload, Loader2, AlertTriangle, FileText, ListFilter, UserX } from 'lucide-react';
 import MenuItemFormDialog, { type MenuItemFormData } from './MenuItemFormDialog';
@@ -47,30 +40,18 @@ export default function MenuItemsManager() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3a25f53 (Console Error)
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
-<<<<<<< HEAD
-=======
->>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
-=======
->>>>>>> 3a25f53 (Console Error)
 
   const fetchMenuItems = useCallback(async () => {
     if (!user || !user.email) {
-      // If user is not available yet, or no email, don't fetch.
-      // This might happen briefly during auth loading.
-      // If authLoading is false and still no user, then it's an issue.
       if (!authLoading) {
           setError("You must be logged in to manage menu items.");
           setIsLoading(false);
-          setMenuItems([]); // Clear any existing items
+          setMenuItems([]); 
       }
       return;
     }
@@ -90,7 +71,7 @@ export default function MenuItemsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, authLoading, toast]); // Added authLoading to dependencies
+  }, [user, authLoading, toast]); 
 
   useEffect(() => {
     if (hasMounted) {
@@ -106,7 +87,6 @@ export default function MenuItemsManager() {
     const url = id ? `/api/admin/menu/items/${id}` : '/api/admin/menu/items';
     const method = id ? 'PUT' : 'POST';
 
-    // Add userId to the payload
     const payload = { ...data, userId: user.email };
 
     try {
@@ -157,7 +137,7 @@ export default function MenuItemsManager() {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('userId', user.email); // Add userId to form data
+    formData.append('userId', user.email); 
 
     try {
       const response = await fetch('/api/admin/menu/upload', {
@@ -211,21 +191,11 @@ export default function MenuItemsManager() {
     );
   }
 
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3a25f53 (Console Error)
   const filteredMenuItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-<<<<<<< HEAD
-=======
->>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
-=======
->>>>>>> 3a25f53 (Console Error)
   return (
     <div className="space-y-6">
       <Card>
@@ -369,10 +339,3 @@ export default function MenuItemsManager() {
     </div>
   );
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> f50d88f (can you add a function to upload the menu items as excel or manually edi)
-=======
->>>>>>> 3a25f53 (Console Error)
