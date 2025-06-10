@@ -119,7 +119,7 @@ export default function SignUpPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="flex items-center text-sm">
                   <KeyRound size={16} className="mr-2 opacity-70" /> Password
-                Label>
+                </Label>
                 <Input
                   id="password"
                   type="password"
@@ -171,4 +171,3 @@ export default function SignUpPage() {
     </AppLayout>
   );
 }
-
