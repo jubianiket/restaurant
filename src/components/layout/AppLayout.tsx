@@ -12,7 +12,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <main className="flex-grow bg-background">
         {children}
       </main>
-      <footer className="bg-card text-card-foreground p-4 text-center text-sm">
+      <footer className="app-footer bg-card text-card-foreground p-4 text-center text-sm">
         <p>&copy; {new Date().getFullYear()} Foodie Orders. All rights reserved.</p>
       </footer>
     </div>

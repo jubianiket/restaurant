@@ -10,7 +10,7 @@ export default function Header() {
   const { user, logout, isLoading } = useAuth();
 
   return (
-    <header className="bg-primary text-primary-foreground shadow-md">
+    <header className="app-header bg-primary text-primary-foreground shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href={user ? "/create-order" : "/"} className="flex items-center gap-2">
           <UtensilsCrossed size={32} />

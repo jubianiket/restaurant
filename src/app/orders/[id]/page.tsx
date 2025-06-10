@@ -58,7 +58,7 @@ export default function OrderDetailsPage() {
         <div className="container mx-auto p-8 text-center">
           <h1 className="text-2xl font-bold">Order Not Found</h1>
           <p className="text-muted-foreground">The requested order could not be located.</p>
-          <Button asChild className="mt-4">
+          <Button asChild className="mt-4 no-print-btn">
             <Link href="/history">
               <ArrowLeft size={18} className="mr-2" />
               Back to Order History
@@ -97,12 +97,12 @@ export default function OrderDetailsPage() {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 md:p-8">
-        <Button onClick={() => router.back()} variant="outline" className="mb-6">
+        <Button onClick={() => router.back()} variant="outline" className="mb-6 no-print-btn">
           <ArrowLeft size={18} className="mr-2" />
           Back
         </Button>
 
-        <Card className="shadow-xl">
+        <Card className="shadow-xl order-details-card">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
@@ -182,13 +182,6 @@ export default function OrderDetailsPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t">
-<<<<<<< HEAD
-<<<<<<< HEAD
-            <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
-=======
-            <PrintBillButton orderId={order.id} />
->>>>>>> 633c2f0 (Updated app)
-=======
             <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
 >>>>>>> b26b633 (I see this error with the app, reported by NextJS, please fix it. The er)
             {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
