@@ -9,10 +9,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export const metadata = {
-  title: 'Manage Menu - Foodie Orders',
-};
-
 export default function AdminMenuPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
