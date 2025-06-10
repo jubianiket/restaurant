@@ -9,12 +9,13 @@ import type { Order } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit3, History as HistoryIcon, Loader2 } from 'lucide-react';
+import { Eye, Edit3, History as HistoryIcon, Loader2, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import * as xlsx from 'xlsx';
 
 export default function OrderHistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -24,12 +25,12 @@ export default function OrderHistoryPage() {
 
   useEffect(() => {
     if (!authIsLoading && !user) {
-      router.replace('/'); // Redirect to login
+      router.replace('/'); 
     }
   }, [user, authIsLoading, router]);
 
   useEffect(() => {
-    if (user) { // Only load orders if authenticated
+    if (user) { 
         setOrders([...initialMockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     }
   }, [user]);
@@ -71,6 +72,42 @@ export default function OrderHistoryPage() {
     });
   };
 
+  const handleDownloadAllOrders = () => {
+    if (!orders || orders.length === 0) {
+      toast({ title: "No Orders", description: "There are no orders to download.", variant: "destructive" });
+      return;
+    }
+
+    const dataForExcel = orders.map(order => ({
+      "Order ID": order.id,
+      "Date": format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
+      "Customer Name": order.customerDetails.name,
+      "Customer Phone": order.customerDetails.phone,
+      "Customer Address": order.customerDetails.address || "N/A",
+      "Order Type": order.type,
+      "Status": order.status,
+      "Total Cost (Rs.)": order.totalCost.toFixed(2),
+      "Items": order.items.map(item => `${item.name} (Qty: ${item.quantity}, Price: ${item.price.toFixed(2)})`).join(' | ')
+    }));
+
+    const worksheet = xlsx.utils.json_to_sheet(dataForExcel);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, "AllOrders");
+
+    const columnWidths = Object.keys(dataForExcel[0] || {}).map(key => {
+        let maxWidth = key.length;
+        dataForExcel.forEach(row => {
+            const cellValue = String((row as any)[key] || "");
+            maxWidth = Math.max(maxWidth, cellValue.length);
+        });
+        return { wch: Math.min(maxWidth + 2, 50) };
+    });
+    worksheet['!cols'] = columnWidths;
+    
+    xlsx.writeFile(workbook, `Foodie_All_Orders_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+  };
+
+
   if (authIsLoading || !user) {
     return (
       <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
@@ -82,10 +119,18 @@ export default function OrderHistoryPage() {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-8 flex items-center">
-          <HistoryIcon size={36} className="mr-3" /> Order History
-        </h1>
-        {orders.length === 0 ? (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary flex items-center">
+            <HistoryIcon size={36} className="mr-3" /> Order History
+            </h1>
+            {orders.length > 0 && (
+                <Button onClick={handleDownloadAllOrders} variant="outline" className="mt-4 sm:mt-0">
+                    <Download size={18} className="mr-2" />
+                    Download All Orders
+                </Button>
+            )}
+        </div>
+        {orders.length === 0 && !authIsLoading ? (
           <p className="text-muted-foreground text-lg">No past orders found.</p>
         ) : (
           <div className="bg-card p-4 md:p-6 rounded-lg shadow-lg">

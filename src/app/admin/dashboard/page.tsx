@@ -5,13 +5,16 @@ import { useEffect, useMemo } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { Loader2, DollarSign, ShoppingCart, PieChart, ListChecks } from 'lucide-react';
-import { mockOrders } from '@/lib/mockData'; // Assuming orders are available here
+import { Loader2, DollarSign, ShoppingCart, PieChart, ListChecks, Download } from 'lucide-react';
+import { mockOrders } from '@/lib/mockData'; 
 import type { Order } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Pie, PieChart as RechartsPieChart, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Pie, PieChart as RechartsPieChart, Cell } from "recharts";
 import { Separator } from '@/components/ui/separator';
+import * as xlsx from 'xlsx';
+import { format } from 'date-fns';
 
 const COLORS_STATUS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF5733'];
 const COLORS_TYPE = ['#A0E7E5', '#FBE7C6', '#86E3CE'];
@@ -23,14 +26,14 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!authIsLoading && !user) {
-      router.replace('/'); // Redirect to login
+      router.replace('/'); 
     }
   }, [user, authIsLoading, router]);
 
   const analyticsData = useMemo(() => {
-    if (!user) return null; // Only calculate if user is logged in
+    if (!user) return null; 
 
-    const orders: Order[] = mockOrders; // In a real app, fetch this or pass as props
+    const orders: Order[] = mockOrders; 
 
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum, order) => sum + order.totalCost, 0);
@@ -54,8 +57,42 @@ export default function AdminDashboardPage() {
       totalRevenue,
       orderStatusChartData,
       orderTypeChartData,
+      orders, // pass the orders for download
     };
   }, [user]);
+
+  const handleDownloadOrdersReport = () => {
+    if (!analyticsData || !analyticsData.orders) return;
+
+    const dataForExcel = analyticsData.orders.map(order => ({
+      "Order ID": order.id,
+      "Date": format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
+      "Customer Name": order.customerDetails.name,
+      "Customer Phone": order.customerDetails.phone,
+      "Customer Address": order.customerDetails.address || "N/A",
+      "Order Type": order.type,
+      "Status": order.status,
+      "Total Cost (Rs.)": order.totalCost.toFixed(2),
+      "Items": order.items.map(item => `${item.name} (Qty: ${item.quantity}, Price: ${item.price.toFixed(2)})`).join(' | ')
+    }));
+
+    const worksheet = xlsx.utils.json_to_sheet(dataForExcel);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, "OrdersReport");
+    
+    // Dynamically set column widths
+    const columnWidths = Object.keys(dataForExcel[0] || {}).map(key => {
+        let maxWidth = key.length; // Start with header length
+        dataForExcel.forEach(row => {
+            const cellValue = String((row as any)[key] || "");
+            maxWidth = Math.max(maxWidth, cellValue.length);
+        });
+        return { wch: Math.min(maxWidth + 2, 50) }; // Add padding, cap at 50
+    });
+    worksheet['!cols'] = columnWidths;
+
+    xlsx.writeFile(workbook, `Foodie_Orders_Report_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+  };
 
   if (authIsLoading || !user || !analyticsData) {
     return (
@@ -68,9 +105,15 @@ export default function AdminDashboardPage() {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-2">
-          Admin Dashboard
-        </h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
+            <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary">
+            Admin Dashboard
+            </h1>
+            <Button onClick={handleDownloadOrdersReport} variant="outline" className="mt-4 sm:mt-0">
+                <Download size={18} className="mr-2" />
+                Download Orders Report
+            </Button>
+        </div>
         <p className="text-muted-foreground mb-6">
           Overview of your restaurant's performance and order statistics.
         </p>
