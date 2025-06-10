@@ -33,19 +33,20 @@ export default function AdminDashboardPage() {
   const analyticsData = useMemo(() => {
     if (!user) return null; 
 
-    const orders: Order[] = mockOrders; 
+    // Filter orders for the current user
+    const userSpecificOrders: Order[] = mockOrders.filter(order => order.userId === user.email);
 
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + order.totalCost, 0);
+    const totalOrders = userSpecificOrders.length;
+    const totalRevenue = userSpecificOrders.reduce((sum, order) => sum + order.totalCost, 0);
 
-    const orderStatusCounts = orders.reduce((acc, order) => {
+    const orderStatusCounts = userSpecificOrders.reduce((acc, order) => {
       acc[order.status] = (acc[order.status] || 0) + 1;
       return acc;
     }, {} as Record<Order['status'], number>);
 
     const orderStatusChartData = Object.entries(orderStatusCounts).map(([name, value]) => ({ name, value }));
 
-    const orderTypeCounts = orders.reduce((acc, order) => {
+    const orderTypeCounts = userSpecificOrders.reduce((acc, order) => {
       acc[order.type] = (acc[order.type] || 0) + 1;
       return acc;
     }, {} as Record<Order['type'], number>);
@@ -57,12 +58,15 @@ export default function AdminDashboardPage() {
       totalRevenue,
       orderStatusChartData,
       orderTypeChartData,
-      orders, // pass the orders for download
+      orders: userSpecificOrders, // pass the user-specific orders for download
     };
   }, [user]);
 
   const handleDownloadOrdersReport = () => {
-    if (!analyticsData || !analyticsData.orders) return;
+    if (!analyticsData || !analyticsData.orders || analyticsData.orders.length === 0) {
+        toast({ title: "No Data", description: "No orders to download for your account.", variant: "destructive"});
+        return;
+    }
 
     const dataForExcel = analyticsData.orders.map(order => ({
       "Order ID": order.id,
@@ -80,18 +84,17 @@ export default function AdminDashboardPage() {
     const workbook = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(workbook, worksheet, "OrdersReport");
     
-    // Dynamically set column widths
     const columnWidths = Object.keys(dataForExcel[0] || {}).map(key => {
-        let maxWidth = key.length; // Start with header length
+        let maxWidth = key.length; 
         dataForExcel.forEach(row => {
             const cellValue = String((row as any)[key] || "");
             maxWidth = Math.max(maxWidth, cellValue.length);
         });
-        return { wch: Math.min(maxWidth + 2, 50) }; // Add padding, cap at 50
+        return { wch: Math.min(maxWidth + 2, 50) }; 
     });
     worksheet['!cols'] = columnWidths;
 
-    xlsx.writeFile(workbook, `Foodie_Orders_Report_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+    xlsx.writeFile(workbook, `Foodie_Orders_Report_${user?.email?.split('@')[0]}_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
   };
 
   if (authIsLoading || !user || !analyticsData) {
@@ -107,134 +110,147 @@ export default function AdminDashboardPage() {
       <div className="container mx-auto p-4 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
             <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary">
-            Admin Dashboard
+            My Dashboard
             </h1>
-            <Button onClick={handleDownloadOrdersReport} variant="outline" className="mt-4 sm:mt-0">
-                <Download size={18} className="mr-2" />
-                Download Orders Report
-            </Button>
+            {analyticsData.orders.length > 0 && (
+                <Button onClick={handleDownloadOrdersReport} variant="outline" className="mt-4 sm:mt-0">
+                    <Download size={18} className="mr-2" />
+                    Download My Orders Report
+                </Button>
+            )}
         </div>
         <p className="text-muted-foreground mb-6">
-          Overview of your restaurant's performance and order statistics.
+          Overview of your order statistics and performance.
         </p>
         <Separator className="mb-8" />
+        
+        {analyticsData.totalOrders === 0 ? (
+             <p className="text-muted-foreground text-lg text-center py-8">You have not placed any orders yet. Your dashboard will populate once you have order data.</p>
+        ) : (
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                <div className="text-2xl font-bold">Rs.{analyticsData.totalRevenue.toFixed(2)}</div>
+                <p className="text-xs text-muted-foreground">
+                    from your orders
+                </p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                <div className="text-2xl font-bold">{analyticsData.totalOrders}</div>
+                <p className="text-xs text-muted-foreground">
+                    placed by you
+                </p>
+                </CardContent>
+            </Card>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Rs.{analyticsData.totalRevenue.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                from all orders
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{analyticsData.totalOrders}</div>
-              <p className="text-xs text-muted-foreground">
-                processed in total
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                    <ListChecks className="mr-2 h-5 w-5" /> Order Status Distribution
+                </CardTitle>
+                </CardHeader>
+                <CardContent>
+                {analyticsData.orderStatusChartData.length > 0 ? (
+                    <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
+                    <RechartsPieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Pie
+                        data={analyticsData.orderStatusChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#8884d8"
+                        labelLine={false}
+                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+                            const RADIAN = Math.PI / 180;
+                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                            const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                            const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                            return (
+                            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="10">
+                                {`${name} (${(percent * 100).toFixed(0)}%)`}
+                            </text>
+                            );
+                        }}
+                        >
+                        {analyticsData.orderStatusChartData.map((entry, index) => (
+                            <Cell key={`cell-status-${index}`} fill={COLORS_STATUS[index % COLORS_STATUS.length]} />
+                        ))}
+                        </Pie>
+                    </RechartsPieChart>
+                    </ChartContainer>
+                ) : (
+                    <p className="text-muted-foreground text-center py-4">No order status data available.</p>
+                )}
+                </CardContent>
+            </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <ListChecks className="mr-2 h-5 w-5" /> Order Status Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {analyticsData.orderStatusChartData.length > 0 ? (
-                <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
-                  <RechartsPieChart>
-                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                    <Pie
-                      data={analyticsData.orderStatusChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      fill="#8884d8"
-                      labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
-                        const RADIAN = Math.PI / 180;
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        return (
-                          <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="10">
-                            {`${name} (${(percent * 100).toFixed(0)}%)`}
-                          </text>
-                        );
-                      }}
-                    >
-                      {analyticsData.orderStatusChartData.map((entry, index) => (
-                        <Cell key={`cell-status-${index}`} fill={COLORS_STATUS[index % COLORS_STATUS.length]} />
-                      ))}
-                    </Pie>
-                  </RechartsPieChart>
-                </ChartContainer>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">No order status data available.</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center">
-                <PieChart className="mr-2 h-5 w-5" /> Order Type Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-             {analyticsData.orderTypeChartData.length > 0 ? (
-                <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
-                  <RechartsPieChart>
-                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                    <Pie
-                      data={analyticsData.orderTypeChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
-                        const RADIAN = Math.PI / 180;
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        return (
-                          <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="10">
-                            {`${name} (${(percent * 100).toFixed(0)}%)`}
-                          </text>
-                        );
-                      }}
-                    >
-                      {analyticsData.orderTypeChartData.map((entry, index) => (
-                        <Cell key={`cell-type-${index}`} fill={COLORS_TYPE[index % COLORS_TYPE.length]} />
-                      ))}
-                    </Pie>
-                  </RechartsPieChart>
-                </ChartContainer>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">No order type data available.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+                <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                    <PieChart className="mr-2 h-5 w-5" /> Order Type Distribution
+                </CardTitle>
+                </CardHeader>
+                <CardContent>
+                {analyticsData.orderTypeChartData.length > 0 ? (
+                    <ChartContainer config={{}} className="mx-auto aspect-square max-h-[300px]">
+                    <RechartsPieChart>
+                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                        <Pie
+                        data={analyticsData.orderTypeChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        labelLine={false}
+                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+                            const RADIAN = Math.PI / 180;
+                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                            const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                            const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                            return (
+                            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="10">
+                                {`${name} (${(percent * 100).toFixed(0)}%)`}
+                            </text>
+                            );
+                        }}
+                        >
+                        {analyticsData.orderTypeChartData.map((entry, index) => (
+                            <Cell key={`cell-type-${index}`} fill={COLORS_TYPE[index % COLORS_TYPE.length]} />
+                        ))}
+                        </Pie>
+                    </RechartsPieChart>
+                    </ChartContainer>
+                ) : (
+                    <p className="text-muted-foreground text-center py-4">No order type data available.</p>
+                )}
+                </CardContent>
+            </Card>
+            </div>
+        </>
+        )}
       </div>
     </AppLayout>
   );
 }
+
+// Helper for toast, in case it's not globally available or you want a local instance
+// This can be removed if useToast is already imported and configured project-wide
+import { useToast } from "@/hooks/use-toast";
+const { toast } = useToast();
