@@ -166,7 +166,7 @@ export default function OrderDetailsPage() {
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                     </div>
-                    <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold">Rs.{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -175,7 +175,7 @@ export default function OrderDetailsPage() {
             <Separator />
             
             <div className="text-right">
-              <p className="text-2xl font-bold">Total: <span className="text-primary">${order.totalCost.toFixed(2)}</span></p>
+              <p className="text-2xl font-bold">Total: <span className="text-primary">Rs.{order.totalCost.toFixed(2)}</span></p>
             </div>
           </CardContent>
 

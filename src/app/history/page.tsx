@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -87,7 +88,7 @@ export default function OrderHistoryPage() {
                     <TableCell>{format(new Date(order.createdAt), 'MMM d, yyyy HH:mm')}</TableCell>
                     <TableCell>{order.customerDetails.name} ({order.customerDetails.phone})</TableCell>
                     <TableCell className="capitalize">{order.type}</TableCell>
-                    <TableCell className="text-right">${order.totalCost.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">Rs.{order.totalCost.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge className={getStatusBadgeClass(order.status)}>{order.status}</Badge>
                     </TableCell>

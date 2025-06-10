@@ -45,7 +45,7 @@ export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) 
         <p className="text-xs text-muted-foreground line-clamp-3">{item.description}</p> {/* Reduced font size, added line-clamp */}
       </CardContent>
       <CardFooter className="p-3 pt-2 flex justify-between items-center"> {/* Reduced padding */}
-        <p className="text-md font-semibold text-primary">${item.price.toFixed(2)}</p> {/* Reduced font size */}
+        <p className="text-md font-semibold text-primary">Rs.{item.price.toFixed(2)}</p> {/* Reduced font size */}
         <Button onClick={() => onAddToOrder(item)} size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-xs px-2 py-1 h-auto"> {/* Made button smaller */}
           <PlusCircle size={14} className="mr-1" /> {/* Adjusted icon size */}
           Add

@@ -77,7 +77,7 @@ export default function MenuItemsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
 <<<<<<< HEAD
@@ -306,7 +306,7 @@ export default function MenuItemsManager() {
                         </TableCell>
                         <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell>{item.category}</TableCell>
-                        <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">Rs.{item.price.toFixed(2)}</TableCell>
                         <TableCell className="text-center">
                         <MenuItemFormDialog
                             mode="edit"

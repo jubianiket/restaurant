@@ -63,7 +63,7 @@ export default function OrderSummary({ items, totalPrice, onUpdateQuantity, onRe
               )}
               <div className="flex-grow">
                 <h4 className="font-semibold">{item.name}</h4>
-                <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} x {item.quantity}</p>
+                <p className="text-sm text-muted-foreground">Rs.{item.price.toFixed(2)} x {item.quantity}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
                     <MinusCircle size={16} />
@@ -75,7 +75,7 @@ export default function OrderSummary({ items, totalPrice, onUpdateQuantity, onRe
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold">Rs.{(item.price * item.quantity).toFixed(2)}</p>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive mt-1" onClick={() => onRemoveItem(item.id)}>
                   <XCircle size={18} />
                 </Button>
@@ -89,7 +89,7 @@ export default function OrderSummary({ items, totalPrice, onUpdateQuantity, onRe
           <Separator />
           <div className="w-full flex justify-between items-center text-lg font-semibold mt-2">
             <span>Total:</span>
-            <span className="text-primary">${totalPrice.toFixed(2)}</span>
+            <span className="text-primary">Rs.{totalPrice.toFixed(2)}</span>
           </div>
         </CardFooter>
       )}
