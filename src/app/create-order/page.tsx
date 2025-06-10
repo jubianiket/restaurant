@@ -217,15 +217,32 @@ export default function CreateOrderPage() {
         body: JSON.stringify({ to: recipientPhoneNumber, body: smsMessage }),
       });
 
-      const result = await response.json();
+      let result;
+      let errorMessageFromApi;
 
-      if (response.ok && result.success) {
+      if (!response.ok) {
+        // Attempt to parse error JSON even if response.ok is false
+        try {
+          const errorResult = await response.json();
+          errorMessageFromApi = errorResult.error || errorResult.message;
+        } catch (e) {
+          // Failed to parse JSON, use statusText
+          errorMessageFromApi = `Server responded with ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessageFromApi || 'Failed to send SMS due to server error.');
+      }
+      
+      // If response.ok is true, expect valid JSON
+      result = await response.json();
+
+      if (result.success) {
         toast({
           title: "SMS Sent!",
           description: `Order confirmation SMS sent to ${order.customerDetails.phone}. SID: ${result.messageSid}`,
         });
       } else {
-        const detailedErrorMessage = result.error || result.message || 'Failed to send SMS';
+        // API responded with success: false
+        const detailedErrorMessage = result.error || result.message || 'Failed to send SMS (API returned error)';
         throw new Error(detailedErrorMessage);
       }
     } catch (error) {
@@ -393,4 +410,4 @@ export default function CreateOrderPage() {
   );
 }
 
-    
+      
