@@ -60,18 +60,18 @@ export default function LoginPage() {
       return;
     }
 
-    // Simulate API call / validation
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // In a real app, you'd validate credentials against a backend
-    // For this demo, any non-empty email/password is fine
-    login(email);
+    // login function now handles validation and redirection/toast internally
+    login(email, password);
     
-    // login() in AuthContext handles redirection, so no need for router.push here
-    // Toast can be shown by AuthContext or here if needed after successful login
-    // toast({ title: "Login Successful!", description: "Welcome back!" });
-    
-    // No need to setIsSubmitting(false) if redirecting
+    // Set submitting to false only if login might fail and stay on page
+    // Since login handles redirection on success, this might not be needed if redirect always happens.
+    // However, if login fails, we want to re-enable the button.
+    // The login function in AuthContext will show a toast on failure.
+    // We assume login will either redirect or fail & show toast, so we can reset isSubmitting.
+     setTimeout(() => setIsSubmitting(false), 500); // Add a small delay to allow toast to show if login fails
   };
 
   if (authIsLoading || (!authIsLoading && user)) {
@@ -89,7 +89,7 @@ export default function LoginPage() {
           <LogIn className="mx-auto h-10 w-10 text-primary mb-3" />
           <CardTitle className="text-2xl md:text-3xl font-headline">Welcome Back!</CardTitle>
           <CardDescription className="mt-1 text-muted-foreground">
-            Sign in to continue to Foodie Orders.
+            Sign in to continue to Foodie Orders. (Hint: admin@example.com / password123)
           </CardDescription>
         </CardHeader>
         <CardContent>
