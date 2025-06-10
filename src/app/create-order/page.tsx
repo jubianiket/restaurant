@@ -202,24 +202,9 @@ export default function CreateOrderPage() {
       });
       return;
     }
-    // Basic validation for E.164 format, though server should ideally handle more robust validation
-    // Twilio generally expects E.164 format: +[country code][subscriber number including area code]
-    // For example: +15551234567 for a US number.
-    // For simplicity, let's assume the user enters it in a way Twilio might accept or we adjust it.
-    // It's better to enforce E.164 input or transform it.
+    
     let recipientPhoneNumber = order.customerDetails.phone;
-    if (!recipientPhoneNumber.startsWith('+')) {
-        // This is a very basic attempt to prepend + if missing.
-        // You might need more sophisticated logic depending on expected input formats.
-        // For many countries, just adding + might not be enough (e.g. if country code is missing)
-        // For Twilio in US/Canada, it might work without +1 if the 'from' number is US/Canadian.
-        // But for international, E.164 is crucial.
-        // Example: if user enters '5551234567', and it's a US number, it should be '+15551234567'
-        // For this example, we'll send as is if not starting with '+', or you can try to prefix.
-        // toast({ title: "Phone Number Format", description: "For best results, enter phone number in E.164 format (e.g., +15551234567).", variant: "default"});
-    }
-
-
+    
     setIsSendingSms(true);
     try {
       const smsMessage = `Your Foodie Order ${order.id} for Rs.${order.totalCost.toFixed(2)} has been placed. Items: ${order.items.map(i => i.name).join(', ')}. Thank you!`;
@@ -240,7 +225,8 @@ export default function CreateOrderPage() {
           description: `Order confirmation SMS sent to ${order.customerDetails.phone}. SID: ${result.messageSid}`,
         });
       } else {
-        throw new Error(result.message || 'Failed to send SMS');
+        const detailedErrorMessage = result.error || result.message || 'Failed to send SMS';
+        throw new Error(detailedErrorMessage);
       }
     } catch (error) {
       console.error("SMS sending error:", error);
@@ -406,3 +392,5 @@ export default function CreateOrderPage() {
     </AppLayout>
   );
 }
+
+    
