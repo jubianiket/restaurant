@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle } from "lucide-react";
+import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle, MessageSquareText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -33,6 +33,7 @@ export default function CreateOrderPage() {
   const [menuLoading, setMenuLoading] = useState(true);
   const [menuError, setMenuError] = useState<string | null>(null);
   const [orderSubmitted, setOrderSubmitted] = useState(false);
+  const [lastSubmittedOrder, setLastSubmittedOrder] = useState<Order | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
 
   useEffect(() => {
@@ -168,6 +169,7 @@ export default function CreateOrderPage() {
        mockOrders.unshift(newOrder);
     }
 
+    setLastSubmittedOrder(newOrder);
     setOrderSubmitted(true);
     toast({
       title: isEditing ? "Order Updated!" : "Order Submitted!",
@@ -182,10 +184,33 @@ export default function CreateOrderPage() {
     setCustomerDetails({ name: '', phone: '', address: '' });
     setCurrentOrderItems([]);
     setOrderSubmitted(false);
+    setLastSubmittedOrder(null);
     setIsEditing(null);
     router.replace('/create-order');
     toast({ title: "New Order Started", description: "Please fill in the details for your new order."});
   }
+
+  const handleSendSmsConfirmation = (order: Order | null) => {
+    if (!order) return;
+
+    if (!order.customerDetails.phone) {
+      toast({
+        title: "Cannot Send SMS",
+        description: "No phone number provided for this order.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const smsMessage = `Simulating SMS to ${order.customerDetails.phone}: Your Foodie Order ${order.id} for Rs.${order.totalCost.toFixed(2)} has been placed. Thank you!`;
+    console.log(smsMessage);
+
+    toast({
+      title: "SMS Simulated",
+      description: `Confirmation for order ${order.id} 'sent' to ${order.customerDetails.phone}.`,
+    });
+  };
+
 
   if (authIsLoading || !user) {
     return (
@@ -256,18 +281,27 @@ export default function CreateOrderPage() {
           )}
         </div>
 
-        {orderSubmitted && !isEditing ? (
+        {orderSubmitted && !isEditing && lastSubmittedOrder ? (
           <Alert variant="default" className="bg-green-100 border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-300">
             <CheckCircle className="h-5 w-5" />
             <AlertTitle className="font-bold">Order Placed Successfully!</AlertTitle>
             <AlertDescription>
-              Your order ID is <strong>{mockOrders.find(o => o.userId === user.email)?.id || 'N/A'}</strong>. Thank you for choosing Foodie Orders!
-              <div className="mt-4">
+              Your order ID is <strong>{lastSubmittedOrder.id}</strong>. Thank you for choosing Foodie Orders!
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Button onClick={handleStartNewOrder} variant="default" className="bg-green-600 hover:bg-green-700 text-white">
                   Create Another Order
                 </Button>
-                <Button onClick={() => router.push('/history')} variant="outline" className="ml-2 border-green-600 text-green-700 hover:bg-green-50">
+                <Button onClick={() => router.push('/history')} variant="outline" className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-500 dark:text-green-300 dark:hover:bg-green-800">
                   View Order History
+                </Button>
+                <Button 
+                  onClick={() => handleSendSmsConfirmation(lastSubmittedOrder)} 
+                  variant="outline" 
+                  className="border-blue-600 text-blue-700 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-300 dark:hover:bg-blue-800"
+                  disabled={!lastSubmittedOrder.customerDetails.phone}
+                >
+                  <MessageSquareText size={16} className="mr-2" />
+                  Send SMS Confirmation
                 </Button>
               </div>
             </AlertDescription>
@@ -322,3 +356,4 @@ export default function CreateOrderPage() {
     </AppLayout>
   );
 }
+
