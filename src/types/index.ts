@@ -29,6 +29,7 @@ export interface Order {
   totalCost: number;
   status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'completed' | 'cancelled';
   createdAt: string; // ISO date string
+  userId?: string; // Email of the user who placed the order
 }
 
 export interface AuthUser {

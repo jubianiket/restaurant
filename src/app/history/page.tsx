@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { mockOrders as initialMockOrders } from '@/lib/mockData';
 import type { Order } from '@/types';
@@ -25,13 +25,17 @@ export default function OrderHistoryPage() {
 
   useEffect(() => {
     if (!authIsLoading && !user) {
-      router.replace('/'); 
+      router.replace('/');
     }
   }, [user, authIsLoading, router]);
 
   useEffect(() => {
-    if (user) { 
-        setOrders([...initialMockOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+    if (user) {
+        // Filter orders for the current user and sort them
+        const userOrders = initialMockOrders
+            .filter(o => o.userId === user.email)
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setOrders(userOrders);
     }
   }, [user]);
 
@@ -55,11 +59,13 @@ export default function OrderHistoryPage() {
   }
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    const orderInMock = initialMockOrders.find(o => o.id === orderId);
+    // Update in the global mockOrders array
+    const orderInMock = initialMockOrders.find(o => o.id === orderId && o.userId === user?.email);
     if (orderInMock) {
       orderInMock.status = newStatus;
     }
 
+    // Update local state for UI re-render, maintaining user filter and sort
     setOrders(prevOrders =>
       prevOrders.map(o =>
         o.id === orderId ? { ...o, status: newStatus } : o
@@ -72,12 +78,13 @@ export default function OrderHistoryPage() {
     });
   };
 
-  const handleDownloadAllOrders = () => {
+  const handleDownloadUserOrders = () => {
     if (!orders || orders.length === 0) {
-      toast({ title: "No Orders", description: "There are no orders to download.", variant: "destructive" });
+      toast({ title: "No Orders", description: "There are no orders in your history to download.", variant: "destructive" });
       return;
     }
 
+    // orders state is already filtered for the current user
     const dataForExcel = orders.map(order => ({
       "Order ID": order.id,
       "Date": format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
@@ -92,7 +99,7 @@ export default function OrderHistoryPage() {
 
     const worksheet = xlsx.utils.json_to_sheet(dataForExcel);
     const workbook = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(workbook, worksheet, "AllOrders");
+    xlsx.utils.book_append_sheet(workbook, worksheet, "MyOrders");
 
     const columnWidths = Object.keys(dataForExcel[0] || {}).map(key => {
         let maxWidth = key.length;
@@ -103,8 +110,8 @@ export default function OrderHistoryPage() {
         return { wch: Math.min(maxWidth + 2, 50) };
     });
     worksheet['!cols'] = columnWidths;
-    
-    xlsx.writeFile(workbook, `Foodie_All_Orders_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+
+    xlsx.writeFile(workbook, `Foodie_My_Orders_${user?.email?.split('@')[0]}_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
   };
 
 
@@ -121,17 +128,17 @@ export default function OrderHistoryPage() {
       <div className="container mx-auto p-4 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <h1 className="text-3xl md:text-4xl font-headline font-bold text-primary flex items-center">
-            <HistoryIcon size={36} className="mr-3" /> Order History
+            <HistoryIcon size={36} className="mr-3" /> My Order History
             </h1>
             {orders.length > 0 && (
-                <Button onClick={handleDownloadAllOrders} variant="outline" className="mt-4 sm:mt-0">
+                <Button onClick={handleDownloadUserOrders} variant="outline" className="mt-4 sm:mt-0">
                     <Download size={18} className="mr-2" />
-                    Download All Orders
+                    Download My Orders
                 </Button>
             )}
         </div>
         {orders.length === 0 && !authIsLoading ? (
-          <p className="text-muted-foreground text-lg">No past orders found.</p>
+          <p className="text-muted-foreground text-lg">You have no past orders.</p>
         ) : (
           <div className="bg-card p-4 md:p-6 rounded-lg shadow-lg">
             <Table>
@@ -163,6 +170,7 @@ export default function OrderHistoryPage() {
                           onValueChange={(newStatusValue) => {
                             handleUpdateOrderStatus(order.id, newStatusValue as Order['status']);
                           }}
+                          disabled={!user || order.userId !== user.email} // Disable if not user's order (extra check)
                         >
                           <SelectTrigger className="w-full min-w-[120px] max-w-[150px] text-xs capitalize h-8">
                             <SelectValue placeholder="Set status" />
@@ -173,7 +181,7 @@ export default function OrderHistoryPage() {
                             {order.status !== 'pending' &&
                              order.status !== 'completed' &&
                              order.status !== 'cancelled' &&
-                             order.status !== 'delivered' && (
+                             order.status !== 'delivered' && ( // Show current status if it's one of the "in-between" states
                               <SelectItem value={order.status} className="text-xs capitalize">{order.status}</SelectItem>
                             )}
                           </SelectContent>

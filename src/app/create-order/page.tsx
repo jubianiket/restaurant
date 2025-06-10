@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import type { MenuItem, OrderItem, OrderType, CustomerDetails, Order } from '@/types';
-import { mockOrders } from '@/lib/mockData'; 
+import { mockOrders } from '@/lib/mockData';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -70,19 +70,20 @@ export default function CreateOrderPage() {
 
       const editOrderId = searchParams.get('edit');
       if (editOrderId) {
-        const orderToEdit = mockOrders.find(o => o.id === editOrderId); 
+        const orderToEdit = mockOrders.find(o => o.id === editOrderId && o.userId === user.email); // Ensure user owns the order
         if (orderToEdit) {
           setIsEditing(editOrderId);
           setOrderType(orderToEdit.type);
           setCustomerDetails(orderToEdit.customerDetails);
-          setCurrentOrderItems(orderToEdit.items.map(item => ({ ...item }))); 
+          setCurrentOrderItems(orderToEdit.items.map(item => ({ ...item })));
           toast({ title: "Editing Order", description: `You are now editing order ${editOrderId}.`});
         } else {
-          toast({ title: "Error", description: `Order ${editOrderId} not found for editing.`, variant: "destructive"});
+          toast({ title: "Error", description: `Order ${editOrderId} not found or you don't have permission to edit it.`, variant: "destructive"});
+          router.replace('/create-order'); // Go back to clean create order page
         }
       }
     }
-  }, [searchParams, toast, user]);
+  }, [searchParams, toast, user, router]);
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
     setCurrentOrderItems(prevItems => {
@@ -126,6 +127,10 @@ export default function CreateOrderPage() {
   }, [currentOrderItems]);
 
   const handleSubmitOrder = () => {
+    if (!user) {
+        toast({ title: "Not Authenticated", description: "Please log in to submit an order.", variant: "destructive" });
+        return;
+    }
     if (!orderType) {
       toast({ title: "Missing Information", description: "Please select an order type.", variant: "destructive" });
       return;
@@ -151,17 +156,18 @@ export default function CreateOrderPage() {
       totalCost: totalPrice,
       status: 'pending',
       createdAt: new Date().toISOString(),
+      userId: user.email, // Tag order with user's email
     };
 
     console.log('Order Submitted:', newOrder);
-    
+
     if(isEditing) {
-      const index = mockOrders.findIndex(o => o.id === isEditing);
-      if(index !== -1) mockOrders[index] = newOrder; else mockOrders.push(newOrder);
+      const index = mockOrders.findIndex(o => o.id === isEditing && o.userId === user.email);
+      if(index !== -1) mockOrders[index] = newOrder; else mockOrders.push(newOrder); // Should ideally not push if edit target not found
     } else {
-       mockOrders.unshift(newOrder); 
+       mockOrders.unshift(newOrder);
     }
-   
+
     setOrderSubmitted(true);
     toast({
       title: isEditing ? "Order Updated!" : "Order Submitted!",
@@ -177,7 +183,7 @@ export default function CreateOrderPage() {
     setCurrentOrderItems([]);
     setOrderSubmitted(false);
     setIsEditing(null);
-    router.replace('/create-order'); 
+    router.replace('/create-order');
     toast({ title: "New Order Started", description: "Please fill in the details for your new order."});
   }
 
@@ -190,7 +196,7 @@ export default function CreateOrderPage() {
   }
 
   const isSubmitDisabled = !orderType || !customerDetails.name || !customerDetails.phone || currentOrderItems.length === 0 || (orderType === 'delivery' && !customerDetails.address);
-  
+
   const renderMenuContent = () => {
     if (menuLoading) {
       return (
@@ -255,7 +261,7 @@ export default function CreateOrderPage() {
             <CheckCircle className="h-5 w-5" />
             <AlertTitle className="font-bold">Order Placed Successfully!</AlertTitle>
             <AlertDescription>
-              Your order ID is <strong>{mockOrders[0]?.id}</strong>. Thank you for choosing Foodie Orders!
+              Your order ID is <strong>{mockOrders.find(o => o.userId === user.email)?.id || 'N/A'}</strong>. Thank you for choosing Foodie Orders!
               <div className="mt-4">
                 <Button onClick={handleStartNewOrder} variant="default" className="bg-green-600 hover:bg-green-700 text-white">
                   Create Another Order
@@ -300,8 +306,8 @@ export default function CreateOrderPage() {
                   onUpdateQuantity={handleUpdateQuantity}
                   onRemoveItem={handleRemoveFromOrder}
                 />
-                <Button 
-                  onClick={handleSubmitOrder} 
+                <Button
+                  onClick={handleSubmitOrder}
                   className="w-full mt-6 text-lg py-6"
                   disabled={isSubmitDisabled || menuLoading || !!menuError}
                 >
