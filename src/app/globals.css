@@ -103,7 +103,7 @@
 
   .no-print, .no-print *,
   header.app-header,
-  /* footer.app-footer, */ /* Intentionally commented out as per previous attempt */
+  /* footer.app-footer, */ 
   nav,
   aside,
   form,
