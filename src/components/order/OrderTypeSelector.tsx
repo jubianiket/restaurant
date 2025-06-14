@@ -3,8 +3,8 @@
 import type { OrderType } from '@/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Truck, Utensils, ShoppingBag } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card'; // Removed CardHeader, CardTitle as they are not used
+import { Truck, Utensils } from 'lucide-react'; // Removed ShoppingBag
 
 interface OrderTypeSelectorProps {
   selectedType: OrderType | null;
@@ -14,7 +14,7 @@ interface OrderTypeSelectorProps {
 const orderTypeOptions = [
   { value: 'delivery' as OrderType, label: 'Delivery', Icon: Truck },
   { value: 'dine-in' as OrderType, label: 'Dine-in', Icon: Utensils },
-  { value: 'take-away' as OrderType, label: 'Take Away', Icon: ShoppingBag },
+  // { value: 'take-away' as OrderType, label: 'Take Away', Icon: ShoppingBag }, // Removed Take Away
 ];
 
 export default function OrderTypeSelector({ selectedType, onSelectType }: OrderTypeSelectorProps) {
@@ -24,7 +24,7 @@ export default function OrderTypeSelector({ selectedType, onSelectType }: OrderT
         <RadioGroup
           value={selectedType ?? undefined}
           onValueChange={(value) => onSelectType(value as OrderType)}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4" // Adjusted grid-cols for 2 items
         >
           {orderTypeOptions.map(({ value, label, Icon }) => (
             <Label

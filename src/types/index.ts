@@ -10,7 +10,7 @@ export interface MenuItem {
   userId?: string; // Email of the user who owns the menu item
 }
 
-export type OrderType = 'delivery' | 'dine-in' | 'take-away';
+export type OrderType = 'delivery' | 'dine-in'; // Removed 'take-away'
 
 export interface OrderItem extends MenuItem {
   quantity: number;
@@ -20,6 +20,7 @@ export interface CustomerDetails {
   name: string;
   phone: string;
   address?: string;
+  tableNumber?: string; // Added tableNumber
 }
 
 export interface Order {

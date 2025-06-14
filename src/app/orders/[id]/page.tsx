@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import PrintBillButton from '@/components/order/PrintBillButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, CalendarDays, Tag, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, Hash, FileText, Loader2 } from 'lucide-react'; // Added Hash
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +59,7 @@ export default function OrderDetailsPage() {
   const OrderTypeIcon = ({ type }: { type: Order['type'] }) => {
     if (type === 'delivery') return <Truck className="mr-2 h-5 w-5 text-primary" />;
     if (type === 'dine-in') return <Utensils className="mr-2 h-5 w-5 text-primary" />;
-    if (type === 'take-away') return <ShoppingBag className="mr-2 h-5 w-5 text-primary" />;
+    // if (type === 'take-away') return <ShoppingBag className="mr-2 h-5 w-5 text-primary" />; // Removed take-away
     return null;
   };
   
@@ -114,9 +114,12 @@ export default function OrderDetailsPage() {
                 {order.type === 'delivery' && order.customerDetails.address && (
                   <p className="flex items-start"><MapPin className="mr-2 h-4 w-4 text-muted-foreground mt-1" /> <strong className="w-20">Address:</strong> {order.customerDetails.address}</p>
                 )}
+                {order.type === 'dine-in' && order.customerDetails.tableNumber && (
+                  <p className="flex items-center"><Hash className="mr-2 h-4 w-4 text-muted-foreground" /> <strong className="w-20">Table:</strong> {order.customerDetails.tableNumber}</p>
+                )}
               </section>
               <section>
-                <h3 className="text-xl font-semibold mb-3 flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Order Type</h3>
+                <h3 className="text-xl font-semibold mb-3 flex items-center"><Utensils className="mr-2 h-5 w-5 text-primary" />Order Type</h3> {/* Updated icon to be more generic or tied to type */}
                 <p className="flex items-center text-lg capitalize"><OrderTypeIcon type={order.type} /> {order.type}</p>
               </section>
             </div>
@@ -135,7 +138,7 @@ export default function OrderDetailsPage() {
                         width={60} 
                         height={60} 
                         className="rounded object-cover" 
-                        data-ai-hint={item.dataAiHint || item.category.toLowerCase()} 
+                        data-ai-hint={item.dataAiHint || (item.category ? item.category.toLowerCase() : 'food item')} 
                       />
                     ) : (
                       <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center text-xs text-muted-foreground">No Image</div>

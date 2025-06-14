@@ -1,3 +1,4 @@
+
 import type { MenuItem, Order, OrderItem, CustomerDetails, OrderType } from '@/types';
 
 const DEMO_USER_ID = "admin@example.com"; // Default user for initial mock data
@@ -84,12 +85,12 @@ const generateMockOrderItems = (count: number, userId: string): OrderItem[] => {
 };
 
 const mockCustomerDetails = (): CustomerDetails[] => [
-  { name: 'Alice Smith', phone: '555-0101', address: '123 Main St, Anytown, USA' },
-  { name: 'Bob Johnson', phone: '555-0102' },
+  { name: 'Alice Smith', phone: '555-0101', address: '123 Main St, Anytown, USA', tableNumber: '5A' },
+  { name: 'Bob Johnson', phone: '555-0102', tableNumber: '12' },
   { name: 'Charlie Brown', phone: '555-0103', address: '456 Oak Ave, Anytown, USA' },
 ];
 
-const orderTypes: OrderType[] = ['delivery', 'dine-in', 'take-away'];
+const orderTypes: OrderType[] = ['delivery', 'dine-in']; // Removed 'take-away'
 const orderStatuses: Order['status'][] = ['completed', 'pending', 'confirmed', 'cancelled'];
 
 
@@ -104,8 +105,10 @@ export const mockOrders: Order[] = Array.from({ length: 5 }, (_, i) => {
     id: `ORD-${1001 + i}`,
     type: type,
     customerDetails: {
-      ...customer,
+      name: customer.name,
+      phone: customer.phone,
       address: type === 'delivery' ? customer.address || '789 Pine Ln, Anytown, USA' : undefined,
+      tableNumber: type === 'dine-in' ? customer.tableNumber || `T${i + 1}` : undefined,
     },
     items,
     totalCost,

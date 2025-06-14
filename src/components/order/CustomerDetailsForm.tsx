@@ -5,7 +5,7 @@ import type { CustomerDetails, OrderType } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, User, MapPin } from 'lucide-react';
+import { Phone, User, MapPin, Hash } from 'lucide-react'; // Added Hash for table number
 
 interface CustomerDetailsFormProps {
   details: CustomerDetails;
@@ -64,6 +64,23 @@ export default function CustomerDetailsForm({ details, onDetailsChange, orderTyp
               value={details.address ?? ''}
               onChange={handleChange}
               required={orderType === 'delivery'}
+              className="text-base"
+            />
+          </div>
+        )}
+        {orderType === 'dine-in' && (
+          <div className="space-y-2">
+            <Label htmlFor="tableNumber" className="flex items-center gap-2 text-base">
+              <Hash size={18} /> Table Number
+            </Label>
+            <Input
+              id="tableNumber"
+              name="tableNumber"
+              type="text"
+              placeholder="Enter table number"
+              value={details.tableNumber ?? ''}
+              onChange={handleChange}
+              required={orderType === 'dine-in'}
               className="text-base"
             />
           </div>

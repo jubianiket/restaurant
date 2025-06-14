@@ -27,7 +27,7 @@ export default function CreateOrderClient() {
   const { user, isLoading: authIsLoading } = useAuth();
 
   const [orderType, setOrderType] = useState<OrderType | null>(null);
-  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: '', phone: '', address: '' });
+  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: '', phone: '', address: '', tableNumber: '' });
   const [currentOrderItems, setCurrentOrderItems] = useState<OrderItem[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);
@@ -47,6 +47,7 @@ export default function CreateOrderClient() {
     async function fetchUserMenuItems(userId: string) {
       setMenuLoading(true);
       setMenuError(null);
+      setMenuItems([]); // Clear previous menu items
       try {
         const response = await fetch(`/api/menu?userId=${encodeURIComponent(userId)}`);
         if (!response.ok) {
@@ -57,6 +58,7 @@ export default function CreateOrderClient() {
       } catch (error) {
         console.error("Error fetching menu items:", error);
         setMenuError(error instanceof Error ? error.message : "An unknown error occurred while fetching the menu.");
+        setMenuItems([]); // Ensure menu is empty on error
         toast({
           title: "Error Loading Menu",
           description: "Could not load menu items. Please try again later.",
@@ -85,9 +87,8 @@ export default function CreateOrderClient() {
         }
       }
     } else if (authIsLoading) {
-      setMenuLoading(true); // Show loading state for menu while auth is resolving
+      setMenuLoading(true); 
     } else if (!authIsLoading && !user) {
-      // This case should be covered by the redirection useEffect, but as a fallback:
       setMenuItems([]);
       setMenuLoading(false);
     }
@@ -151,6 +152,10 @@ export default function CreateOrderClient() {
       toast({ title: "Missing Information", description: "Please enter a delivery address.", variant: "destructive" });
       return;
     }
+    if (orderType === 'dine-in' && !customerDetails.tableNumber) {
+      toast({ title: "Missing Information", description: "Please enter a table number for dine-in.", variant: "destructive" });
+      return;
+    }
     if (currentOrderItems.length === 0) {
       toast({ title: "Empty Order", description: "Please add items to your order.", variant: "destructive" });
       return;
@@ -188,7 +193,7 @@ export default function CreateOrderClient() {
 
   const handleStartNewOrder = () => {
     setOrderType(null);
-    setCustomerDetails({ name: '', phone: '', address: '' });
+    setCustomerDetails({ name: '', phone: '', address: '', tableNumber: '' });
     setCurrentOrderItems([]);
     setOrderSubmitted(false);
     setLastSubmittedOrder(null);
@@ -264,7 +269,7 @@ export default function CreateOrderClient() {
   };
 
 
-  if (authIsLoading || !user && !authIsLoading) { // Adjusted condition to show loader until auth is resolved AND user is checked
+  if (authIsLoading || !user && !authIsLoading) { 
     return (
       <div className="flex flex-grow items-center justify-center min-h-screen bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -272,7 +277,12 @@ export default function CreateOrderClient() {
     );
   }
 
-  const isSubmitDisabled = !orderType || !customerDetails.name || !customerDetails.phone || currentOrderItems.length === 0 || (orderType === 'delivery' && !customerDetails.address);
+  const isSubmitDisabled = !orderType || 
+                           !customerDetails.name || 
+                           !customerDetails.phone || 
+                           currentOrderItems.length === 0 || 
+                           (orderType === 'delivery' && !customerDetails.address) ||
+                           (orderType === 'dine-in' && !customerDetails.tableNumber);
 
   const renderMenuContent = () => {
     if (menuLoading) {
@@ -418,5 +428,3 @@ export default function CreateOrderClient() {
     </AppLayout>
   );
 }
-
-    
