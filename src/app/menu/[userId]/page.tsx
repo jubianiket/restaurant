@@ -39,7 +39,9 @@ export default function PublicUserMenuPage() {
 
   useEffect(() => {
     if (userId) {
-      const namePart = userId.split('@')[0];
+      // Decode userId just in case it's double-encoded by any chance, though typically params are decoded.
+      const decodedUserId = decodeURIComponent(userId);
+      const namePart = decodedUserId.split('@')[0];
       const capitalizedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
       setRestaurantName(`${capitalizedName}'s Eatery`);
 
@@ -47,16 +49,30 @@ export default function PublicUserMenuPage() {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await fetch(`/api/menu?userId=${encodeURIComponent(userId)}`);
+          const encodedUserIdForApi = encodeURIComponent(decodedUserId);
+          const fetchUrl = `/api/menu?userId=${encodedUserIdForApi}`;
+          console.log(`[Public Menu Page] Attempting to fetch menu from: ${fetchUrl}`);
+          
+          const response = await fetch(fetchUrl);
+          
           if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Failed to fetch menu (status: ${response.status})`);
+            let errorData;
+            const responseText = await response.text(); // Get raw response text
+            try {
+              errorData = JSON.parse(responseText); // Try to parse as JSON
+            } catch (e) {
+              errorData = { message: responseText }; // Fallback to raw text
+            }
+            console.error(`[Public Menu Page] Failed to fetch menu. Status: ${response.status}. URL: ${fetchUrl}. Response:`, errorData);
+            throw new Error(errorData.message || `Request failed with status ${response.status}.`);
           }
+          
           const data: MenuItem[] = await response.json();
+          console.log(`[Public Menu Page] Successfully fetched ${data.length} menu items for ${decodedUserId}.`);
           setMenuItems(data);
         } catch (err) {
-          console.error("Error fetching public menu:", err);
-          setError((err as Error).message);
+          console.error("[Public Menu Page] Full error during fetchMenu:", err);
+          setError(`Error loading menu: ${(err as Error).message}. Check browser console for details.`);
         } finally {
           setIsLoading(false);
         }
@@ -127,7 +143,7 @@ export default function PublicUserMenuPage() {
           <CardContent>
             <p>{error}</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              This menu may not be available or the link might be incorrect.
+              This menu may not be available, the link might be incorrect, or there could be a network issue.
             </p>
           </CardContent>
         </Card>
@@ -201,3 +217,4 @@ export default function PublicUserMenuPage() {
     </PublicMenuLayout>
   );
 }
+
