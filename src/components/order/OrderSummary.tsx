@@ -32,13 +32,13 @@ export default function OrderSummary({ items, totalPrice, onUpdateQuantity, onRe
           items.map(item => (
             <div key={item.id} className="flex items-start gap-4 py-2 border-b border-border last:border-b-0">
               {item.imageUrl ? (
-                <Image 
-                  src={item.imageUrl} 
-                  alt={item.name} 
-                  width={60} 
-                  height={60} 
-                  className="rounded-md object-cover" 
-                  data-ai-hint={item.dataAiHint || item.category.toLowerCase()} 
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  width={60}
+                  height={60}
+                  className="rounded-md object-cover"
+                  data-ai-hint={item.dataAiHint || item.category?.toLowerCase() || 'food item'}
                 />
               ) : (
                  <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center text-xs text-muted-foreground">No Image</div>

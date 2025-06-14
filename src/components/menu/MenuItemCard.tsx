@@ -21,7 +21,7 @@ export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) 
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{ objectFit: 'cover' }}
-            data-ai-hint={item.dataAiHint || item.category.toLowerCase()}
+            data-ai-hint={item.dataAiHint || item.category?.toLowerCase() || 'food item'}
           />
         </div>
       ) : (
