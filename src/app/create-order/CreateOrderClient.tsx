@@ -10,13 +10,14 @@ import { useAuth } from '@/hooks/useAuth';
 import AppLayout from '@/components/layout/AppLayout';
 import OrderTypeSelector from '@/components/order/OrderTypeSelector';
 import CustomerDetailsForm from '@/components/order/CustomerDetailsForm';
+import TableSelector from '@/components/order/TableSelector';
 import MenuList from '@/components/menu/MenuList';
 import OrderSummary from '@/components/order/OrderSummary';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle, MessageSquareText } from "lucide-react";
+import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle, MessageSquareText, ThumbsUp, Table as TableIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -28,6 +29,7 @@ export default function CreateOrderClient() {
 
   const [orderType, setOrderType] = useState<OrderType | null>(null);
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: '', phone: '', address: '', tableNumber: '' });
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [currentOrderItems, setCurrentOrderItems] = useState<OrderItem[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading] = useState(true);
@@ -80,6 +82,9 @@ export default function CreateOrderClient() {
           setOrderType(orderToEdit.type);
           setCustomerDetails(orderToEdit.customerDetails);
           setCurrentOrderItems(orderToEdit.items.map(item => ({ ...item })));
+          if (orderToEdit.type === 'dine-in' && orderToEdit.customerDetails.tableNumber) {
+            setSelectedTable(orderToEdit.customerDetails.tableNumber);
+          }
           toast({ title: "Editing Order", description: `You are now editing order ${editOrderId}.`});
         } else {
           toast({ title: "Error", description: `Order ${editOrderId} not found or you don't have permission to edit it.`, variant: "destructive"});
@@ -93,6 +98,20 @@ export default function CreateOrderClient() {
       setMenuLoading(false);
     }
   }, [searchParams, toast, user, router, authIsLoading]);
+
+  const handleTableSelect = (tableNumber: string) => {
+    setSelectedTable(tableNumber);
+    setCustomerDetails({
+      name: `Table ${tableNumber}`,
+      phone: 'N/A', // Set a default non-empty value
+      tableNumber,
+      address: '',
+    });
+    toast({
+      title: `Table ${tableNumber} selected`,
+      description: "You can now add items to the order.",
+    })
+  };
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
     setCurrentOrderItems(prevItems => {
@@ -144,18 +163,19 @@ export default function CreateOrderClient() {
       toast({ title: "Missing Information", description: "Please select an order type.", variant: "destructive" });
       return;
     }
-    if (!customerDetails.name || !customerDetails.phone) {
-      toast({ title: "Missing Information", description: "Please enter customer name and phone number.", variant: "destructive" });
-      return;
+
+    if (orderType === 'delivery') {
+      if (!customerDetails.name || !customerDetails.phone || !customerDetails.address) {
+        toast({ title: "Missing Information", description: "Please enter customer name, phone, and address for delivery.", variant: "destructive" });
+        return;
+      }
+    } else if (orderType === 'dine-in') {
+      if (!selectedTable) {
+        toast({ title: "Missing Information", description: "Please select a table for dine-in.", variant: "destructive" });
+        return;
+      }
     }
-    if (orderType === 'delivery' && !customerDetails.address) {
-      toast({ title: "Missing Information", description: "Please enter a delivery address.", variant: "destructive" });
-      return;
-    }
-    if (orderType === 'dine-in' && !customerDetails.tableNumber) {
-      toast({ title: "Missing Information", description: "Please enter a table number for dine-in.", variant: "destructive" });
-      return;
-    }
+    
     if (currentOrderItems.length === 0) {
       toast({ title: "Empty Order", description: "Please add items to your order.", variant: "destructive" });
       return;
@@ -197,6 +217,7 @@ export default function CreateOrderClient() {
     setCurrentOrderItems([]);
     setOrderSubmitted(false);
     setLastSubmittedOrder(null);
+    setSelectedTable(null);
     setIsEditing(null);
     router.replace('/create-order');
     toast({ title: "New Order Started", description: "Please fill in the details for your new order."});
@@ -205,10 +226,10 @@ export default function CreateOrderClient() {
   const handleSendSmsConfirmation = async (order: Order | null) => {
     if (!order) return;
 
-    if (!order.customerDetails.phone) {
+    if (!order.customerDetails.phone || !order.customerDetails.phone.startsWith('+')) {
       toast({
         title: "Cannot Send SMS",
-        description: "No phone number provided for this order.",
+        description: "No valid phone number provided (must be in E.164 format, e.g., +12223334444).",
         variant: "destructive",
       });
       return;
@@ -278,11 +299,9 @@ export default function CreateOrderClient() {
   }
 
   const isSubmitDisabled = !orderType || 
-                           !customerDetails.name || 
-                           !customerDetails.phone || 
                            currentOrderItems.length === 0 || 
-                           (orderType === 'delivery' && !customerDetails.address) ||
-                           (orderType === 'dine-in' && !customerDetails.tableNumber);
+                           (orderType === 'delivery' && (!customerDetails.name || !customerDetails.phone || !customerDetails.address)) ||
+                           (orderType === 'dine-in' && !selectedTable);
 
   const renderMenuContent = () => {
     if (menuLoading) {
@@ -333,6 +352,37 @@ export default function CreateOrderClient() {
     return <MenuList menuItems={menuItems} onAddToOrder={handleAddToOrder} />;
   };
 
+  const renderCustomerSection = () => {
+    if (!orderType) return null;
+
+    if (orderType === 'dine-in') {
+      return (
+        <section id="table-selection">
+          <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><TableIcon size={24} className="mr-3 text-primary/70" />2. Select a Table</h2>
+          <TableSelector
+            selectedTable={selectedTable}
+            onSelectTable={handleTableSelect}
+          />
+        </section>
+      );
+    }
+    
+    if (orderType === 'delivery') {
+      return (
+        <section id="customer-details">
+          <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><User size={24} className="mr-3 text-primary/70" />2. Customer Details</h2>
+          <CustomerDetailsForm
+            details={customerDetails}
+            onDetailsChange={setCustomerDetails}
+            orderType={orderType}
+          />
+        </section>
+      );
+    }
+    
+    return null;
+  };
+
 
   return (
     <AppLayout>
@@ -363,7 +413,7 @@ export default function CreateOrderClient() {
                   onClick={() => handleSendSmsConfirmation(lastSubmittedOrder)} 
                   variant="outline" 
                   className="border-blue-600 text-blue-700 hover:bg-blue-50 dark:border-blue-500 dark:text-blue-300 dark:hover:bg-blue-800"
-                  disabled={!lastSubmittedOrder.customerDetails.phone || isSendingSms}
+                  disabled={!lastSubmittedOrder.customerDetails.phone || !lastSubmittedOrder.customerDetails.phone.startsWith('+') || isSendingSms}
                 >
                   {isSendingSms ? (
                     <>
@@ -382,19 +432,16 @@ export default function CreateOrderClient() {
           <>
             <section id="order-type">
               <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><Utensils size={24} className="mr-3 text-primary/70" />1. Select Order Type</h2>
-              <OrderTypeSelector selectedType={orderType} onSelectType={setOrderType} />
+              <OrderTypeSelector selectedType={orderType} onSelectType={(type) => {
+                setOrderType(type);
+                setSelectedTable(null); // Reset table selection when type changes
+                setCustomerDetails({ name: '', phone: '', address: '', tableNumber: '' }); // Reset details
+              }} />
             </section>
 
             <Separator />
 
-            <section id="customer-details">
-              <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><User size={24} className="mr-3 text-primary/70" />2. Customer Details</h2>
-              <CustomerDetailsForm
-                details={customerDetails}
-                onDetailsChange={setCustomerDetails}
-                orderType={orderType}
-              />
-            </section>
+            {renderCustomerSection()}
 
             <Separator />
 
@@ -406,6 +453,12 @@ export default function CreateOrderClient() {
 
               <section className="lg:col-span-1 sticky top-6" id="order-summary">
                 <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4">4. Order Summary</h2>
+                 {orderType === 'dine-in' && selectedTable && (
+                  <div className="mb-4 flex items-center justify-center text-center p-3 rounded-lg bg-accent text-accent-foreground">
+                    <ThumbsUp size={20} className="mr-2"/>
+                    <span className="font-bold text-lg">Selected: Table {selectedTable}</span>
+                  </div>
+                 )}
                 <OrderSummary
                   items={currentOrderItems}
                   totalPrice={totalPrice}
