@@ -17,9 +17,10 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle, MessageSquareText, ThumbsUp, Table as TableIcon } from "lucide-react";
+import { CheckCircle, ShoppingCart, User, Utensils, Send, Loader2, AlertTriangle, MessageSquareText, ThumbsUp, Table as TableIcon, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 
 export default function CreateOrderClient() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function CreateOrderClient() {
   const [lastSubmittedOrder, setLastSubmittedOrder] = useState<Order | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isSendingSms, setIsSendingSms] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (!authIsLoading && !user) {
@@ -98,6 +100,14 @@ export default function CreateOrderClient() {
       setMenuLoading(false);
     }
   }, [searchParams, toast, user, router, authIsLoading]);
+
+  const filteredMenuItems = useMemo(() => {
+    if (!menuItems) return [];
+    return menuItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [menuItems, searchTerm]);
 
   const handleTableSelect = (tableNumber: string) => {
     setSelectedTable(tableNumber);
@@ -351,7 +361,12 @@ export default function CreateOrderClient() {
     if (!menuItems || menuItems.length === 0) {
         return <p className="text-muted-foreground">No menu items available for you yet. Add some items via "Manage Menu".</p>;
     }
-    return <MenuList menuItems={menuItems} onAddToOrder={handleAddToOrder} />;
+    
+    if (filteredMenuItems.length === 0 && searchTerm) {
+        return <p className="text-muted-foreground text-center py-4">No items match your search for "{searchTerm}".</p>
+    }
+    
+    return <MenuList menuItems={filteredMenuItems} onAddToOrder={handleAddToOrder} />;
   };
 
   const renderCustomerSection = () => {
@@ -450,6 +465,19 @@ export default function CreateOrderClient() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <section className="lg:col-span-2" id="menu-items">
                 <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><ShoppingCart size={24} className="mr-3 text-primary/70" />3. Choose Your Items</h2>
+                
+                <div className="relative mb-6">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search for dishes or categories..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full"
+                        disabled={menuLoading || !!menuError || (!menuItems || menuItems.length === 0)}
+                    />
+                </div>
+
                 {renderMenuContent()}
               </section>
 

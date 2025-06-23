@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import type { MenuItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from '@/components/ui/label';
 import { toast } from "@/hooks/use-toast";
-import { PlusCircle, Edit, Trash2, Upload, Loader2, AlertTriangle, FileText, ListFilter, UserX, QrCode } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Upload, Loader2, AlertTriangle, FileText, UserX, QrCode, Search } from 'lucide-react';
 import MenuItemFormDialog, { type MenuItemFormData } from './MenuItemFormDialog';
 import {
   AlertDialog,
@@ -180,6 +180,14 @@ export default function MenuItemsManager() {
     }
   };
 
+  const filteredMenuItems = useMemo(() => {
+    if (!menuItems) return [];
+    return menuItems.filter(item =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [menuItems, searchTerm]);
+
   if (!hasMounted || (isLoading && menuItems.length === 0 && !error) ) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -201,11 +209,6 @@ export default function MenuItemsManager() {
     );
   }
 
-  const filteredMenuItems = menuItems.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -217,10 +220,10 @@ export default function MenuItemsManager() {
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="relative w-full sm:w-auto">
-                 <ListFilter className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                  <Input
                   type="search"
-                  placeholder="Filter your items..."
+                  placeholder="Filter by name or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 w-full sm:w-80"
