@@ -23,6 +23,7 @@ interface SettingsContextType {
     removeBuilding: (building: string) => void;
     addFlat: (flat: string) => void;
     removeFlat: (flat: string) => void;
+    setBuildingsAndFlats: (buildings: string[], flats: string[]) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -89,7 +90,7 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const addBuilding = useCallback((building: string) => {
     if (building && !settings.buildings.includes(building)) {
-        const newSettings = { ...settings, buildings: [...settings.buildings, building] };
+        const newSettings = { ...settings, buildings: [...settings.buildings, building].sort((a, b) => a.localeCompare(b)) };
         updateSettings(newSettings);
     }
   }, [settings, updateSettings]);
@@ -110,8 +111,17 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     const newSettings = { ...settings, flats: settings.flats.filter(f => f !== flat) };
     updateSettings(newSettings);
   }, [settings, updateSettings]);
+  
+  const setBuildingsAndFlats = useCallback((buildings: string[], flats: string[]) => {
+    updateSettings({ 
+        ...settings, 
+        buildings: [...new Set(buildings)].sort((a, b) => a.localeCompare(b)),
+        flats: [...new Set(flats)].sort((a,b) => a.localeCompare(b, undefined, {numeric: true})),
+    });
+  }, [settings, updateSettings]);
 
-  const value = { settings, isLoading, setTableCount, addBuilding, removeBuilding, addFlat, removeFlat };
+
+  const value = { settings, isLoading, setTableCount, addBuilding, removeBuilding, addFlat, removeFlat, setBuildingsAndFlats };
 
   return (
     <SettingsContext.Provider value={value}>
