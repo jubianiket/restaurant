@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, History, LayoutDashboard, Settings, LogIn, LogOut, UserCircle, Loader2, UserPlus, UtensilsCrossed, PanelLeft } from "lucide-react";
+import { Home, History, LayoutDashboard, Settings, LogIn, LogOut, UserCircle, Loader2, UserPlus, UtensilsCrossed, PanelLeft, NotebookText } from "lucide-react";
 
 
 // This component has been repurposed to be the main Sidebar Navigation.
@@ -72,8 +72,16 @@ export default function HeaderAsSidebarNav() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild isActive={isActive("/admin/menu")} tooltip={{children: "Manage Menu"}}>
                                     <Link href="/admin/menu">
-                                        <Settings />
+                                        <NotebookText />
                                         <span className="group-data-[collapsible=icon]:hidden">Manage Menu</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                             <SidebarMenuItem>
+                                <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip={{children: "Settings"}}>
+                                    <Link href="/settings">
+                                        <Settings />
+                                        <span className="group-data-[collapsible=icon]:hidden">Settings</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>

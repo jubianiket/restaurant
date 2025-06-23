@@ -3,20 +3,30 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Table } from 'lucide-react';
+import { Table, Loader2 } from 'lucide-react';
+import { useSettings } from '@/hooks/useSettings';
 
 interface TableSelectorProps {
   selectedTable: string | null;
   onSelectTable: (tableNumber: string) => void;
-  tableCount?: number;
 }
 
 export default function TableSelector({
   selectedTable,
   onSelectTable,
-  tableCount = 12,
 }: TableSelectorProps) {
+  const { settings, isLoading } = useSettings();
+  const tableCount = settings.tableCount || 12;
+
   const tables = Array.from({ length: tableCount }, (_, i) => (i + 1).toString());
+
+  if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+  }
 
   return (
     <Card className="shadow-lg">

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css'; // Reverted import
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/AuthContext';
+import { SettingsProvider } from '@/context/SettingsContext';
 
 export const metadata: Metadata = {
   title: 'Foodie Orders',
@@ -23,8 +24,10 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <AuthProvider>
-          {children}
-          <Toaster />
+          <SettingsProvider>
+            {children}
+            <Toaster />
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>
