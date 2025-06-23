@@ -5,8 +5,9 @@ import type { CustomerDetails, OrderType } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Building, Home } from 'lucide-react';
+import { Phone, Building, Home, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSettings } from '@/hooks/useSettings';
 
 interface CustomerDetailsFormProps {
   details: CustomerDetails;
@@ -14,10 +15,9 @@ interface CustomerDetailsFormProps {
   orderType: OrderType | null;
 }
 
-const buildings = ["Tower A", "Tower B", "Tower C", "Green View Apartments", "Sunset Villas"];
-const flats = Array.from({ length: 20 }, (_, i) => (101 + i).toString());
-
 export default function CustomerDetailsForm({ details, onDetailsChange, orderType }: CustomerDetailsFormProps) {
+  const { settings, isLoading } = useSettings();
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onDetailsChange({ ...details, [e.target.name]: e.target.value });
   };
@@ -28,6 +28,16 @@ export default function CustomerDetailsForm({ details, onDetailsChange, orderTyp
 
   if (orderType !== 'delivery') {
     return null;
+  }
+  
+  if (isLoading) {
+    return (
+        <Card className="shadow-lg">
+            <CardContent className="p-6 flex items-center justify-center h-[116px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    );
   }
 
   return (
@@ -57,12 +67,13 @@ export default function CustomerDetailsForm({ details, onDetailsChange, orderTyp
               value={details.building}
               onValueChange={handleSelectChange('building')}
               required
+              disabled={settings.buildings.length === 0}
             >
               <SelectTrigger id="building">
                 <SelectValue placeholder="Select building" />
               </SelectTrigger>
               <SelectContent>
-                {buildings.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                {settings.buildings.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -75,12 +86,13 @@ export default function CustomerDetailsForm({ details, onDetailsChange, orderTyp
               value={details.flat}
               onValueChange={handleSelectChange('flat')}
               required
+              disabled={settings.flats.length === 0}
             >
               <SelectTrigger id="flat">
                 <SelectValue placeholder="Select flat" />
               </SelectTrigger>
               <SelectContent>
-                {flats.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                {settings.flats.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
