@@ -184,7 +184,7 @@ export default function OrderDetailsPage() {
         </Card>
         
         {/* Hidden component for thermal printing */}
-        <div className="printable-bill hidden">
+        <div className="hidden print:block printable-bill">
             <h2 className="text-center font-bold">Foodie Orders</h2>
             <div className="separator" />
             <p><strong>Order ID:</strong> {order.id}</p>
@@ -200,7 +200,7 @@ export default function OrderDetailsPage() {
             <thead>
                 <tr>
                 <th className="item-col">Item</th>
-                <th className="qty-col text-center">Qty</th>
+                <th className="qty-col">Qty</th>
                 <th className="price-col">Price</th>
                 </tr>
             </thead>
@@ -211,7 +211,7 @@ export default function OrderDetailsPage() {
                     {item.name}
                     {item.portion && <span> ({item.portion})</span>}
                     </td>
-                    <td className="qty-col text-center">{item.quantity}</td>
+                    <td className="qty-col">{item.quantity}</td>
                     <td className="price-col">{(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
                 ))}

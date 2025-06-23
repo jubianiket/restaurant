@@ -94,23 +94,12 @@
 
 /* Print styles for Thermal Receipt */
 @media print {
-  /* Hide everything on the page by default */
-  body > div {
-    display: none !important;
-  }
-
-  /* Only display the element with the .printable-bill class and its children */
-  .printable-bill, .printable-bill * {
-    display: block !important;
-    visibility: visible !important;
-  }
-
   /* Position the bill at the top-left of the page */
   .printable-bill {
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm; /* Standard thermal paper width, allowing for small margin */
+    width: 80mm; /* Standard thermal paper width */
     font-family: 'Courier New', Courier, monospace;
     font-size: 10pt;
     color: #000;
@@ -176,6 +165,7 @@
   }
   .printable-bill .qty-col {
      width: 15%;
+     text-align: center;
   }
   .printable-bill .price-col {
      width: 35%;
