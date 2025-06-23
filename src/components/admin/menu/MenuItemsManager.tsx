@@ -253,7 +253,7 @@ export default function MenuItemsManager() {
                   {isUploading && <Loader2 className="h-5 w-5 animate-spin" />}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                  Columns: Name, Price, Category, Description (optional), ImageUrl (optional), DataAiHint (optional).
+                  Columns: Name, Price, Category, Portion (optional), Description (optional), ImageUrl (optional), DataAiHint (optional).
               </p>
             </div>
           </CardContent>
@@ -314,6 +314,7 @@ export default function MenuItemsManager() {
                     <TableHead className="w-16 hidden md:table-cell">Image</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
+                    <TableHead>Portion</TableHead>
                     <TableHead className="text-right">Price</TableHead>
                     <TableHead className="text-center w-32">Actions</TableHead>
                     </TableRow>
@@ -330,6 +331,7 @@ export default function MenuItemsManager() {
                         </TableCell>
                         <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell>{item.category}</TableCell>
+                        <TableCell>{item.portion || '-'}</TableCell>
                         <TableCell className="text-right">Rs.{item.price.toFixed(2)}</TableCell>
                         <TableCell className="text-center">
                         <MenuItemFormDialog

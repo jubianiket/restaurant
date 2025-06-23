@@ -6,8 +6,9 @@ import { useParams } from 'next/navigation';
 import type { MenuItem } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertTriangle, Utensils, Tag, Info } from 'lucide-react';
+import { AlertTriangle, Utensils, Tag, Info, Box } from 'lucide-react';
 import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 
 function PublicMenuLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -201,6 +202,7 @@ export default function PublicUserMenuPage() {
                   )}
                    <CardHeader className={!item.imageUrl ? "pt-6" : "py-4"}>
                     <CardTitle className="font-headline text-lg">{item.name}</CardTitle>
+                     {item.portion && <Badge variant="secondary" className="font-normal w-fit mt-1">{item.portion}</Badge>}
                   </CardHeader>
                   <CardContent className="flex-grow py-0">
                     {item.description && <p className="text-sm text-muted-foreground mb-2">{item.description}</p>}
@@ -217,4 +219,3 @@ export default function PublicUserMenuPage() {
     </PublicMenuLayout>
   );
 }
-

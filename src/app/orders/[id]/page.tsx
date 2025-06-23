@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import PrintBillButton from '@/components/order/PrintBillButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, Hash, FileText, Loader2, Building } from 'lucide-react';
+import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, Hash, FileText, Loader2, Building, Box } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -147,7 +147,15 @@ export default function OrderDetailsPage() {
                     )}
                     <div className="flex-grow">
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Qty: {item.quantity}</span>
+                        {item.portion && (
+                          <>
+                            <span>&middot;</span>
+                            <span className="flex items-center gap-1"><Box size={14}/> {item.portion}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <p className="font-semibold">Rs.{(item.price * item.quantity).toFixed(2)}</p>
                   </div>

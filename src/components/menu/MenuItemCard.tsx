@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -31,7 +32,15 @@ export default function MenuItemCard({ item, onAddToOrder }: MenuItemCardProps) 
       )}
       <CardHeader className="p-3">
         <CardTitle className="font-headline text-base leading-tight">{item.name}</CardTitle>
-        <CardDescription className="text-muted-foreground text-xs">{item.category}</CardDescription>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{item.category}</span>
+          {item.portion && (
+            <>
+              <span className="text-border">|</span>
+              <Badge variant="outline" className="font-normal">{item.portion}</Badge>
+            </>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-3 pt-0 flex-grow">
         <p className="text-xs text-muted-foreground line-clamp-3">{item.description}</p>

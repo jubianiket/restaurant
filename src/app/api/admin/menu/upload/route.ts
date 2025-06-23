@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       const priceStr = String(row['Price'] || row['price'] || '').trim();
       const price = parseFloat(priceStr);
       const category = String(row['Category'] || row['category'] || '').trim();
+      const portion = String(row['Portion'] || row['portion'] || '').trim();
       const imageUrl = String(row['ImageUrl'] || row['imageUrl'] || row['imageurl'] || '').trim();
       const dataAiHint = String(row['DataAiHint'] || row['dataAiHint'] || row['dataaihint'] || '').trim();
 
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
         description,
         price,
         category,
+        portion: portion || undefined,
         imageUrl: imageUrl || undefined,
         dataAiHint: dataAiHint || undefined,
       });
@@ -76,7 +78,7 @@ export async function POST(request: Request) {
     }
     
     if (newMenuItemsData.length === 0 && jsonData.length > 0 && errors.length === 0) {
-         return NextResponse.json({ message: 'No menu items found in the Excel file, or columns are misnamed. Expected columns: Name, Price, Category, Description (optional), ImageUrl (optional), DataAiHint (optional).' }, { status: 400 });
+         return NextResponse.json({ message: 'No menu items found in the Excel file, or columns are misnamed. Expected columns: Name, Price, Category, Description (optional), ImageUrl (optional), DataAiHint (optional), Portion (optional).' }, { status: 400 });
     }
     if (newMenuItemsData.length === 0 && jsonData.length === 0) {
         return NextResponse.json({ message: 'Excel file is empty or has no data rows.' }, { status: 400 });

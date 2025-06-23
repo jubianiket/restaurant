@@ -5,6 +5,7 @@ export interface MenuItem {
   description: string;
   price: number;
   category: string;
+  portion?: string; // e.g., 'Half', 'Full', 'Regular'
   imageUrl?: string;
   dataAiHint?: string;
   userId?: string; // Email of the user who owns the menu item

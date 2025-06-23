@@ -9,6 +9,7 @@ const menuItemUpdateSchema = z.object({
   description: z.string().optional(),
   price: z.number().positive("Price must be positive").optional(),
   category: z.string().min(1, "Category is required").optional(),
+  portion: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   dataAiHint: z.string().optional(),
 });

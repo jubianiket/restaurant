@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, PlusCircle, MinusCircle, XCircle } from 'lucide-react';
 import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 
 interface OrderSummaryProps {
   items: OrderItem[];
@@ -45,7 +46,8 @@ export default function OrderSummary({ items, totalPrice, onUpdateQuantity, onRe
               )}
               <div className="flex-grow">
                 <h4 className="font-semibold">{item.name}</h4>
-                <p className="text-sm text-muted-foreground">Rs.{item.price.toFixed(2)} x {item.quantity}</p>
+                {item.portion && <Badge variant="secondary" className="text-xs font-normal">{item.portion}</Badge>}
+                <p className="text-sm text-muted-foreground mt-1">Rs.{item.price.toFixed(2)} x {item.quantity}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
                     <MinusCircle size={16} />

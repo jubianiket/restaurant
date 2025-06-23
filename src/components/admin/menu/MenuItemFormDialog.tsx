@@ -30,6 +30,7 @@ const menuItemFormSchema = z.object({
     z.number({ invalid_type_error: "Price must be a number" }).positive("Price must be a positive number")
   ),
   category: z.string().min(1, "Category is required"),
+  portion: z.string().optional(),
   imageUrl: z.string().url("Must be a valid URL").optional().or(z.literal('')),
   dataAiHint: z.string().optional(),
 });
@@ -56,6 +57,7 @@ export default function MenuItemFormDialog({ mode, initialData, onSave, triggerB
     resolver: zodResolver(menuItemFormSchema),
     defaultValues: initialData ? {
       ...initialData,
+      portion: initialData.portion || '',
       imageUrl: initialData.imageUrl || '',
       description: initialData.description || '',
       dataAiHint: initialData.dataAiHint || '',
@@ -64,6 +66,7 @@ export default function MenuItemFormDialog({ mode, initialData, onSave, triggerB
       description: '',
       price: 0,
       category: '',
+      portion: '',
       imageUrl: '',
       dataAiHint: '',
     },
@@ -74,12 +77,13 @@ export default function MenuItemFormDialog({ mode, initialData, onSave, triggerB
       if (mode === 'edit' && initialData) {
         reset({
           ...initialData,
+          portion: initialData.portion || '',
           imageUrl: initialData.imageUrl || '',
           description: initialData.description || '',
           dataAiHint: initialData.dataAiHint || '',
         });
       } else if (mode === 'add') {
-        reset({ name: '', description: '', price: 0, category: '', imageUrl: '', dataAiHint: '' });
+        reset({ name: '', description: '', price: 0, category: '', portion: '', imageUrl: '', dataAiHint: '' });
       }
     }
   }, [isOpen, mode, initialData, reset]);
@@ -127,6 +131,10 @@ export default function MenuItemFormDialog({ mode, initialData, onSave, triggerB
               <Label htmlFor="category" className="text-right">Category</Label>
               <Input id="category" {...register("category")} className="col-span-3" />
               {errors.category && <p className="col-span-4 text-red-500 text-sm text-right">{errors.category.message}</p>}
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="portion" className="text-right">Portion</Label>
+              <Input id="portion" {...register("portion")} className="col-span-3" placeholder="e.g. Full, Half, 250ml" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="imageUrl" className="text-right">Image URL</Label>
