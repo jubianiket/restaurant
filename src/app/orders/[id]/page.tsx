@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import PrintBillButton from '@/components/order/PrintBillButton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, Hash, FileText, Loader2 } from 'lucide-react'; // Added Hash
+import { ArrowLeft, Edit3, ShoppingBag, Truck, Utensils, User, Phone, MapPin, Hash, FileText, Loader2, Building } from 'lucide-react';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +59,6 @@ export default function OrderDetailsPage() {
   const OrderTypeIcon = ({ type }: { type: Order['type'] }) => {
     if (type === 'delivery') return <Truck className="mr-2 h-5 w-5 text-primary" />;
     if (type === 'dine-in') return <Utensils className="mr-2 h-5 w-5 text-primary" />;
-    // if (type === 'take-away') return <ShoppingBag className="mr-2 h-5 w-5 text-primary" />; // Removed take-away
     return null;
   };
   
@@ -80,6 +79,9 @@ export default function OrderDetailsPage() {
         return 'bg-gray-500 text-white';
     }
   }
+  
+  const { name, phone, building, flat, tableNumber } = order.customerDetails;
+  const deliveryAddress = building && flat ? `Flat ${flat}, ${building}` : 'N/A';
 
   return (
     <AppLayout>
@@ -109,17 +111,17 @@ export default function OrderDetailsPage() {
             <div className="grid md:grid-cols-2 gap-6">
               <section>
                 <h3 className="text-xl font-semibold mb-3 flex items-center"><User className="mr-2 h-5 w-5 text-primary" />Customer Information</h3>
-                <p className="flex items-center"><strong className="w-24">Name:</strong> {order.customerDetails.name}</p>
-                <p className="flex items-center"><Phone className="mr-2 h-4 w-4 text-muted-foreground" /> <strong className="w-20">Phone:</strong> {order.customerDetails.phone}</p>
-                {order.type === 'delivery' && order.customerDetails.address && (
-                  <p className="flex items-start"><MapPin className="mr-2 h-4 w-4 text-muted-foreground mt-1" /> <strong className="w-20">Address:</strong> {order.customerDetails.address}</p>
+                {name && <p className="flex items-center"><strong className="w-24">Name:</strong> {name}</p>}
+                <p className="flex items-center"><Phone className="mr-2 h-4 w-4 text-muted-foreground" /> <strong className="w-20">Phone:</strong> {phone}</p>
+                {order.type === 'delivery' && (
+                  <p className="flex items-start"><MapPin className="mr-2 h-4 w-4 text-muted-foreground mt-1" /> <strong className="w-20">Address:</strong> {deliveryAddress}</p>
                 )}
-                {order.type === 'dine-in' && order.customerDetails.tableNumber && (
-                  <p className="flex items-center"><Hash className="mr-2 h-4 w-4 text-muted-foreground" /> <strong className="w-20">Table:</strong> {order.customerDetails.tableNumber}</p>
+                {order.type === 'dine-in' && tableNumber && (
+                  <p className="flex items-center"><Hash className="mr-2 h-4 w-4 text-muted-foreground" /> <strong className="w-20">Table:</strong> {tableNumber}</p>
                 )}
               </section>
               <section>
-                <h3 className="text-xl font-semibold mb-3 flex items-center"><Utensils className="mr-2 h-5 w-5 text-primary" />Order Type</h3> {/* Updated icon to be more generic or tied to type */}
+                <h3 className="text-xl font-semibold mb-3 flex items-center"><Utensils className="mr-2 h-5 w-5 text-primary" />Order Type</h3>
                 <p className="flex items-center text-lg capitalize"><OrderTypeIcon type={order.type} /> {order.type}</p>
               </section>
             </div>

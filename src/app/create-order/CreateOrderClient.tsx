@@ -28,7 +28,7 @@ export default function CreateOrderClient() {
   const { user, isLoading: authIsLoading } = useAuth();
 
   const [orderType, setOrderType] = useState<OrderType | null>(null);
-  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: '', phone: '', address: '', tableNumber: '' });
+  const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({ name: '', phone: '', building: '', flat: '', tableNumber: '' });
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [currentOrderItems, setCurrentOrderItems] = useState<OrderItem[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -103,9 +103,8 @@ export default function CreateOrderClient() {
     setSelectedTable(tableNumber);
     setCustomerDetails({
       name: `Table ${tableNumber}`,
-      phone: 'N/A', // Set a default non-empty value
+      phone: '', // Dine-in may not require phone
       tableNumber,
-      address: '',
     });
     toast({
       title: `Table ${tableNumber} selected`,
@@ -164,11 +163,14 @@ export default function CreateOrderClient() {
       return;
     }
 
+    let finalCustomerDetails = { ...customerDetails };
+
     if (orderType === 'delivery') {
-      if (!customerDetails.name || !customerDetails.phone || !customerDetails.address) {
-        toast({ title: "Missing Information", description: "Please enter customer name, phone, and address for delivery.", variant: "destructive" });
+      if (!customerDetails.phone || !customerDetails.building || !customerDetails.flat) {
+        toast({ title: "Missing Information", description: "Please provide phone, building, and flat for delivery.", variant: "destructive" });
         return;
       }
+      finalCustomerDetails.name = `Delivery to ${customerDetails.building}, ${customerDetails.flat}`;
     } else if (orderType === 'dine-in') {
       if (!selectedTable) {
         toast({ title: "Missing Information", description: "Please select a table for dine-in.", variant: "destructive" });
@@ -184,7 +186,7 @@ export default function CreateOrderClient() {
     const newOrder: Order = {
       id: isEditing || `ORD-${Date.now()}`,
       type: orderType,
-      customerDetails,
+      customerDetails: finalCustomerDetails,
       items: currentOrderItems,
       totalCost: totalPrice,
       status: 'pending',
@@ -213,7 +215,7 @@ export default function CreateOrderClient() {
 
   const handleStartNewOrder = () => {
     setOrderType(null);
-    setCustomerDetails({ name: '', phone: '', address: '', tableNumber: '' });
+    setCustomerDetails({ name: '', phone: '', building: '', flat: '', tableNumber: '' });
     setCurrentOrderItems([]);
     setOrderSubmitted(false);
     setLastSubmittedOrder(null);
@@ -300,7 +302,7 @@ export default function CreateOrderClient() {
 
   const isSubmitDisabled = !orderType || 
                            currentOrderItems.length === 0 || 
-                           (orderType === 'delivery' && (!customerDetails.name || !customerDetails.phone || !customerDetails.address)) ||
+                           (orderType === 'delivery' && (!customerDetails.phone || !customerDetails.building || !customerDetails.flat)) ||
                            (orderType === 'dine-in' && !selectedTable);
 
   const renderMenuContent = () => {
@@ -370,7 +372,7 @@ export default function CreateOrderClient() {
     if (orderType === 'delivery') {
       return (
         <section id="customer-details">
-          <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><User size={24} className="mr-3 text-primary/70" />2. Customer Details</h2>
+          <h2 className="text-xl md:text-2xl font-headline font-semibold mb-4 flex items-center"><User size={24} className="mr-3 text-primary/70" />2. Delivery Details</h2>
           <CustomerDetailsForm
             details={customerDetails}
             onDetailsChange={setCustomerDetails}
@@ -435,7 +437,7 @@ export default function CreateOrderClient() {
               <OrderTypeSelector selectedType={orderType} onSelectType={(type) => {
                 setOrderType(type);
                 setSelectedTable(null); // Reset table selection when type changes
-                setCustomerDetails({ name: '', phone: '', address: '', tableNumber: '' }); // Reset details
+                setCustomerDetails({ name: '', phone: '', building: '', flat: '', tableNumber: '' }); // Reset details
               }} />
             </section>
 

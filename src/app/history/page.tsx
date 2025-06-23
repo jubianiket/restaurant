@@ -39,7 +39,6 @@ export default function OrderHistoryPage() {
     }
   }, [user]);
 
-
   const getStatusBadgeClass = (status: Order['status']): string => {
     switch (status) {
       case 'completed':
@@ -56,6 +55,12 @@ export default function OrderHistoryPage() {
       default:
         return 'bg-gray-500 text-white';
     }
+  }
+
+  const formatAddress = (details: Order['customerDetails']): string => {
+    if (details.tableNumber) return `Table ${details.tableNumber}`;
+    if (details.building && details.flat) return `Flat ${details.flat}, ${details.building}`;
+    return "N/A";
   }
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: Order['status']) => {
@@ -88,9 +93,9 @@ export default function OrderHistoryPage() {
     const dataForExcel = orders.map(order => ({
       "Order ID": order.id,
       "Date": format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
-      "Customer Name": order.customerDetails.name,
+      "Customer Name": order.customerDetails.name || (order.type === 'dine-in' ? `Table ${order.customerDetails.tableNumber}`: 'N/A'),
       "Customer Phone": order.customerDetails.phone,
-      "Customer Address": order.customerDetails.address || "N/A",
+      "Customer Address": formatAddress(order.customerDetails),
       "Order Type": order.type,
       "Status": order.status,
       "Total Cost (Rs.)": order.totalCost.toFixed(2),
@@ -158,7 +163,7 @@ export default function OrderHistoryPage() {
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">{order.id}</TableCell>
                     <TableCell>{format(new Date(order.createdAt), 'MMM d, yyyy HH:mm')}</TableCell>
-                    <TableCell>{order.customerDetails.name} ({order.customerDetails.phone})</TableCell>
+                    <TableCell>{order.customerDetails.name || 'N/A'}</TableCell>
                     <TableCell className="capitalize">{order.type}</TableCell>
                     <TableCell className="text-right">Rs.{order.totalCost.toFixed(2)}</TableCell>
                     <TableCell>

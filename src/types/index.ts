@@ -17,10 +17,11 @@ export interface OrderItem extends MenuItem {
 }
 
 export interface CustomerDetails {
-  name: string;
+  name?: string; // No longer required for delivery
   phone: string;
-  address?: string;
-  tableNumber?: string; // Added tableNumber
+  building?: string;
+  flat?: string;
+  tableNumber?: string;
 }
 
 export interface Order {

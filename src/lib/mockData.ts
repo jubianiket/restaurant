@@ -84,10 +84,10 @@ const generateMockOrderItems = (count: number, userId: string): OrderItem[] => {
   return items;
 };
 
-const mockCustomerDetails = (): CustomerDetails[] => [
-  { name: 'Alice Smith', phone: '555-0101', address: '123 Main St, Anytown, USA', tableNumber: '5A' },
-  { name: 'Bob Johnson', phone: '555-0102', tableNumber: '12' },
-  { name: 'Charlie Brown', phone: '555-0103', address: '456 Oak Ave, Anytown, USA' },
+const mockCustomerDetails = (): Omit<CustomerDetails, 'phone'>[] => [
+  { name: 'Alice Smith', building: 'Tower A', flat: '101', tableNumber: '5A' },
+  { name: 'Bob Johnson', tableNumber: '12' },
+  { name: 'Charlie Brown', building: 'Tower C', flat: '304' },
 ];
 
 const orderTypes: OrderType[] = ['delivery', 'dine-in']; // Removed 'take-away'
@@ -100,14 +100,16 @@ export const mockOrders: Order[] = Array.from({ length: 5 }, (_, i) => {
   const totalCost = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const customer = mockCustomerDetails()[i % mockCustomerDetails().length];
   const type = orderTypes[i % orderTypes.length];
+  const phone = `555-010${i + 1}`;
 
   return {
     id: `ORD-${1001 + i}`,
     type: type,
     customerDetails: {
       name: customer.name,
-      phone: customer.phone,
-      address: type === 'delivery' ? customer.address || '789 Pine Ln, Anytown, USA' : undefined,
+      phone: phone,
+      building: type === 'delivery' ? customer.building || 'Tower B' : undefined,
+      flat: type === 'delivery' ? customer.flat || '202' : undefined,
       tableNumber: type === 'dine-in' ? customer.tableNumber || `T${i + 1}` : undefined,
     },
     items,

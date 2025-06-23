@@ -20,11 +20,10 @@ import { useToast } from "@/hooks/use-toast";
 const COLORS_STATUS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF5733'];
 const COLORS_TYPE = ['#A0E7E5', '#FBE7C6', '#86E3CE'];
 
-
 export default function AdminDashboardPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast(); // Moved useToast hook call inside the component
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!authIsLoading && !user) {
@@ -64,6 +63,12 @@ export default function AdminDashboardPage() {
     };
   }, [user]);
 
+  const formatAddress = (details: Order['customerDetails']): string => {
+    if (details.tableNumber) return `Table ${details.tableNumber}`;
+    if (details.building && details.flat) return `Flat ${details.flat}, ${details.building}`;
+    return "N/A";
+  }
+
   const handleDownloadOrdersReport = () => {
     if (!analyticsData || !analyticsData.orders || analyticsData.orders.length === 0) {
         toast({ title: "No Data", description: "No orders to download for your account.", variant: "destructive"});
@@ -73,9 +78,9 @@ export default function AdminDashboardPage() {
     const dataForExcel = analyticsData.orders.map(order => ({
       "Order ID": order.id,
       "Date": format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
-      "Customer Name": order.customerDetails.name,
+      "Customer Name": order.customerDetails.name || 'N/A',
       "Customer Phone": order.customerDetails.phone,
-      "Customer Address": order.customerDetails.address || "N/A",
+      "Customer Address": formatAddress(order.customerDetails),
       "Order Type": order.type,
       "Status": order.status,
       "Total Cost (Rs.)": order.totalCost.toFixed(2),
@@ -251,7 +256,3 @@ export default function AdminDashboardPage() {
     </AppLayout>
   );
 }
-
-// Helper for toast, in case it's not globally available or you want a local instance
-// This can be removed if useToast is already imported and configured project-wide
-// const { toast } = useToast(); // This line was causing the error and has been moved into the component
