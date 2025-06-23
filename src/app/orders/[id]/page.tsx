@@ -45,7 +45,7 @@ export default function OrderDetailsPage() {
         <div className="container mx-auto p-8 text-center">
           <h1 className="text-2xl font-bold">Order Not Found</h1>
           <p className="text-muted-foreground">The requested order could not be located.</p>
-          <Button asChild className="mt-4 no-print-btn">
+          <Button asChild className="mt-4 print:hidden">
             <Link href="/history">
               <ArrowLeft size={18} className="mr-2" />
               Back to Order History
@@ -86,12 +86,12 @@ export default function OrderDetailsPage() {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 md:p-8">
-        <Button onClick={() => router.back()} variant="outline" className="mb-6 no-print-btn">
+        <Button onClick={() => router.back()} variant="outline" className="mb-6 print:hidden">
           <ArrowLeft size={18} className="mr-2" />
           Back
         </Button>
 
-        <Card className="shadow-xl order-details-card">
+        <Card className="shadow-xl order-details-card print:hidden">
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
@@ -170,7 +170,7 @@ export default function OrderDetailsPage() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t order-actions-footer">
+          <CardFooter className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t print:hidden">
             <PrintBillButton orderId={order.id} data-testid="print-bill-button" />
             {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'delivered' && (
               <Button asChild variant="default">
@@ -182,6 +182,55 @@ export default function OrderDetailsPage() {
             )}
           </CardFooter>
         </Card>
+        
+        {/* Hidden component for thermal printing */}
+        <div className="printable-bill hidden">
+            <h2 className="text-center font-bold">Foodie Orders</h2>
+            <div className="separator" />
+            <p><strong>Order ID:</strong> {order.id}</p>
+            <p><strong>Date:</strong> {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm')}</p>
+            {order.type === 'dine-in' && order.customerDetails.tableNumber && (
+            <p><strong>Table:</strong> {order.customerDetails.tableNumber}</p>
+            )}
+            {order.type === 'delivery' && (
+            <p><strong>For:</strong> Delivery to {order.customerDetails.building}, {order.customerDetails.flat}</p>
+            )}
+            <div className="separator" />
+            <table>
+            <thead>
+                <tr>
+                <th className="item-col">Item</th>
+                <th className="qty-col text-center">Qty</th>
+                <th className="price-col">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {order.items.map((item) => (
+                <tr key={item.id}>
+                    <td className="item-col">
+                    {item.name}
+                    {item.portion && <span> ({item.portion})</span>}
+                    </td>
+                    <td className="qty-col text-center">{item.quantity}</td>
+                    <td className="price-col">{(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+            <div className="separator" />
+            <table className="totals-table">
+                <tbody>
+                    <tr>
+                        <td>Total:</td>
+                        <td className="price-col">Rs.{order.totalCost.toFixed(2)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div className="separator" />
+            <footer>
+              <p className="text-center">Thank you for your order!</p>
+            </footer>
+        </div>
       </div>
     </AppLayout>
   );

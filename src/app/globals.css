@@ -92,72 +92,109 @@
   }
 }
 
-/* Print styles */
+/* Print styles for Thermal Receipt */
 @media print {
-  body {
-    font-family: 'Times New Roman', Times, serif;
-    color: #000;
-    background-color: #fff;
-  }
-
-  .no-print, .no-print *,
-  header.app-header,
-  /* footer.app-footer, */
-  nav,
-  aside,
-  form,
-  .sidebar-wrapper,
-  .order-actions-footer {
+  /* Hide everything on the page by default */
+  body > div {
     display: none !important;
   }
 
-  /* Explicitly hide buttons that are not meant for print */
-  button:not(.printable-button),
-  input[type="button"]:not(.printable-button),
-  input[type="submit"]:not(.printable-button),
-  a.button:not(.printable-button) {
-    display: none !important;
-  }
-
-  /* Ensure general non-essential interactive elements are hidden */
-  input:not([type="text"]):not([readonly]), /* Allow readonly text inputs if they are part of the bill */
-  select,
-  textarea {
-    display: none !important;
-  }
-
-
-  /* Links that are not essential for printed bill */
-  a[href]:not([href^="#"]):not([href^="mailto:"]) {
-    display: none !important;
-  }
-
-
-  .order-details-card, .order-details-card * {
-    box-shadow: none !important;
-    border: 1px solid #ccc !important; /* Add simple border for clarity */
-  }
-  .order-details-card {
-    max-width: 100%;
-    width: 100%;
-    page-break-inside: avoid;
-  }
-
-  /* Make sure essential content is visible */
-  .printable-content, .printable-content * {
-    display: block !important; /* Or other appropriate display type */
+  /* Only display the element with the .printable-bill class and its children */
+  .printable-bill, .printable-bill * {
+    display: block !important;
     visibility: visible !important;
   }
 
-  /* Adjust spacing for print */
-  .container {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
+  /* Position the bill at the top-left of the page */
+  .printable-bill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm; /* Standard thermal paper width, allowing for small margin */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10pt;
+    color: #000;
+    background-color: #fff;
+    padding: 2mm; /* Small padding */
+  }
+  
+  /* Reset all styles within the bill for a clean look */
+  .printable-bill * {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: normal !important;
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    text-shadow: none !important;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
   }
 
-  img {
-    max-width: 100% !important; /* Ensure images don't overflow */
-    page-break-inside: avoid;
+  .printable-bill h1, .printable-bill h2, .printable-bill h3, .printable-bill .font-bold {
+    font-weight: bold !important;
+  }
+  
+  .printable-bill h2 {
+    font-size: 14pt !important;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  
+  .printable-bill p {
+    margin-bottom: 3px;
+  }
+
+  .printable-bill .text-center {
+    text-align: center;
+  }
+  
+  .printable-bill .text-right {
+    text-align: right;
+  }
+
+  .printable-bill .separator {
+    border-top: 1px dashed #000;
+    margin: 5px 0;
+  }
+  
+  .printable-bill table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 5px 0;
+  }
+  
+  .printable-bill th, .printable-bill td {
+    padding: 2px 0;
+    vertical-align: top;
+  }
+
+  .printable-bill .item-col {
+     width: 50%;
+  }
+  .printable-bill .qty-col {
+     width: 15%;
+  }
+  .printable-bill .price-col {
+     width: 35%;
+     text-align: right;
+  }
+  
+  .printable-bill .totals-table td:first-child {
+    text-align: right;
+    font-weight: bold !important;
+    padding-right: 10px;
+  }
+
+  .printable-bill .totals-table td:last-child {
+    text-align: right;
+    font-weight: bold !important;
+  }
+  
+  .printable-bill footer {
+    text-align: center;
+    margin-top: 10px;
   }
 }
