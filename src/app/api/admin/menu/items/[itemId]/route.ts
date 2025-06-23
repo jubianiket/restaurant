@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: Params) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     }
 
-    const menuItem = getMenuItemById(itemId, userId);
+    const menuItem = await getMenuItemById(itemId, userId);
     if (!menuItem) {
       return NextResponse.json({ message: "Menu item not found or you don't have permission" }, { status: 404 });
     }
@@ -56,7 +56,7 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     const validatedData = parseResult.data;
-    const updatedItem = updateMenuItem(itemId, validatedData, userId as string);
+    const updatedItem = await updateMenuItem(itemId, validatedData, userId as string);
 
     if (!updatedItem) {
       return NextResponse.json({ message: "Menu item not found for update or you don't have permission" }, { status: 404 });
@@ -78,7 +78,7 @@ export async function DELETE(request: Request, { params }: Params) {
       return NextResponse.json({ message: "User ID is required for deleting an item" }, { status: 400 });
     }
 
-    const success = deleteMenuItem(itemId, userId);
+    const success = await deleteMenuItem(itemId, userId);
     if (!success) {
       return NextResponse.json({ message: "Menu item not found for deletion or you don't have permission" }, { status: 404 });
     }

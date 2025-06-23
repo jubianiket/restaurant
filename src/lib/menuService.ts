@@ -1,99 +1,97 @@
 
 import type { MenuItem } from '@/types';
-import { mockMenuItems as initialMockMenuItems } from '@/lib/mockData';
+import { getDb } from './db';
 
-// HMR-safe in-memory store for development
-declare global {
-  var __menuItemsStore__: MenuItem[] | undefined;
+export async function getMenuItems(userId: string): Promise<MenuItem[]> {
+  const db = await getDb();
+  return db.all<MenuItem[]>('SELECT * FROM menu_items WHERE userId = ? ORDER BY category, name', userId);
 }
 
-const initializeStore = (): MenuItem[] => {
-  return JSON.parse(JSON.stringify(initialMockMenuItems));
-};
-
-// Use a singleton pattern that is safe for HMR in development
-const getStore = (): MenuItem[] => {
-  if (process.env.NODE_ENV === 'production') {
-    if (!global.__menuItemsStore__) {
-      global.__menuItemsStore__ = initializeStore();
-    }
-    return global.__menuItemsStore__;
-  } else {
-    if (!global.__menuItemsStore__) {
-      global.__menuItemsStore__ = initializeStore();
-    }
-    return global.__menuItemsStore__;
-  }
-};
-
-const setStore = (newStore: MenuItem[]): void => {
-    global.__menuItemsStore__ = newStore;
+export async function getMenuItemById(id: string, userId: string): Promise<MenuItem | undefined> {
+  const db = await getDb();
+  return db.get<MenuItem>('SELECT * FROM menu_items WHERE id = ? AND userId = ?', id, userId);
 }
 
-export function getMenuItems(userId: string): MenuItem[] {
-  const store = getStore();
-  // Return a deep copy to prevent direct mutation of the store from outside
-  return JSON.parse(JSON.stringify(store.filter(item => item.userId === userId)));
-}
-
-export function getMenuItemById(id: string, userId: string): MenuItem | undefined {
-  const store = getStore();
-  const item = store.find(item => item.id === id && item.userId === userId);
-  return item ? { ...item } : undefined;
-}
-
-export function addMenuItem(itemData: Omit<MenuItem, 'id' | 'userId'>, userId: string): MenuItem {
-  const store = getStore();
+export async function addMenuItem(itemData: Omit<MenuItem, 'id' | 'userId'>, userId: string): Promise<MenuItem> {
+  const db = await getDb();
+  const newId = `MENU-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const newItem: MenuItem = {
     ...itemData,
-    id: `MENU-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    id: newId,
     userId: userId,
   };
-  store.push(newItem); // push modifies the array in place
-  return { ...newItem };
+
+  await db.run(
+    'INSERT INTO menu_items (id, userId, name, description, price, category, portion, imageUrl, dataAiHint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    newItem.id,
+    newItem.userId,
+    newItem.name,
+    newItem.description,
+    newItem.price,
+    newItem.category,
+    newItem.portion,
+    newItem.imageUrl,
+    newItem.dataAiHint
+  );
+  return newItem;
 }
 
-export function updateMenuItem(id: string, updatedItemData: Partial<Omit<MenuItem, 'id' | 'userId'>>, userId: string): MenuItem | null {
-  const store = getStore();
-  const itemIndex = store.findIndex(item => item.id === id && item.userId === userId);
-  if (itemIndex === -1) return null;
+export async function updateMenuItem(id: string, updatedItemData: Partial<Omit<MenuItem, 'id' | 'userId'>>, userId: string): Promise<MenuItem | null> {
+    const db = await getDb();
+    const existingItem = await getMenuItemById(id, userId);
+    if (!existingItem) return null;
 
-  // Modify in place
-  store[itemIndex] = {
-    ...store[itemIndex],
-    ...updatedItemData,
-    userId: userId,
-  };
-  return { ...store[itemIndex] };
+    const itemToUpdate = { ...existingItem, ...updatedItemData };
+
+    await db.run(
+        'UPDATE menu_items SET name = ?, description = ?, price = ?, category = ?, portion = ?, imageUrl = ?, dataAiHint = ? WHERE id = ? AND userId = ?',
+        itemToUpdate.name,
+        itemToUpdate.description,
+        itemToUpdate.price,
+        itemToUpdate.category,
+        itemToUpdate.portion,
+        itemToUpdate.imageUrl,
+        itemToUpdate.dataAiHint,
+        id,
+        userId
+    );
+    return itemToUpdate;
 }
 
-export function deleteMenuItem(id: string, userId: string): boolean {
-  const store = getStore();
-  const initialLength = store.length;
-  const newStore = store.filter(item => !(item.id === id && item.userId === userId));
-  
-  if (newStore.length < initialLength) {
-      setStore(newStore);
-      return true;
-  }
-  return false;
+
+export async function deleteMenuItem(id: string, userId: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.run('DELETE FROM menu_items WHERE id = ? AND userId = ?', id, userId);
+  return result.changes !== undefined && result.changes > 0;
 }
 
-// Replaces all menu items for a specific user
-export function replaceMenuItemsForUser(itemsData: Omit<MenuItem, 'id' | 'userId'>[], userId: string): MenuItem[] {
-  const store = getStore();
-  
-  // Remove all existing items for this user
-  const otherUsersItems = store.filter(item => item.userId !== userId);
 
-  // Add new items for this user
+export async function replaceMenuItemsForUser(itemsData: Omit<MenuItem, 'id' | 'userId'>[], userId: string): Promise<MenuItem[]> {
+  const db = await getDb();
   const newItemsForUser: MenuItem[] = itemsData.map((item, index) => ({
     ...item,
-    id: `XLSX-${Date.now()}-${index}-${userId.substring(0,3)}`, // Ensure unique ID
+    id: `XLSX-${Date.now()}-${index}-${userId.substring(0,3)}`,
     userId: userId,
   }));
-  
-  setStore([...otherUsersItems, ...newItemsForUser]);
 
-  return JSON.parse(JSON.stringify(newItemsForUser));
+  try {
+    await db.exec('BEGIN TRANSACTION');
+    
+    await db.run('DELETE FROM menu_items WHERE userId = ?', userId);
+    
+    const stmt = await db.prepare('INSERT INTO menu_items (id, userId, name, description, price, category, portion, imageUrl, dataAiHint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    for (const item of newItemsForUser) {
+        await stmt.run(item.id, item.userId, item.name, item.description, item.price, item.category, item.portion, item.imageUrl, item.dataAiHint);
+    }
+    await stmt.finalize();
+
+    await db.exec('COMMIT');
+
+    return newItemsForUser;
+
+  } catch (error) {
+    console.error("Transaction failed, rolling back:", error);
+    await db.exec('ROLLBACK');
+    throw new Error("Failed to replace menu items due to a database error.");
+  }
 }

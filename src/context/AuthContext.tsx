@@ -19,13 +19,10 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-const DEMO_EMAIL = "admin@example.com";
-const DEMO_PASSWORD = "password123";
-const USERS_STORAGE_KEY = 'foodieRegisteredUsers';
 const LOGGED_IN_USER_KEY = 'foodieUser';
 
 // Basic pseudo-hashing for demonstration. DO NOT USE IN PRODUCTION.
-const pseudoHashPassword = (password: string): string => {
+export const pseudoHashPassword = (password: string): string => {
   return `hashed_${password}_${password.split('').reverse().join('')}`;
 };
 
@@ -48,7 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = useCallback((emailInput: string, passwordInput?: string) => {
+  const login = useCallback(async (emailInput: string, passwordInput?: string) => {
     if (!passwordInput) {
       toast({
         title: "Login Failed",
@@ -60,50 +57,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const email = emailInput.trim().toLowerCase();
     const password = passwordInput;
-    const passwordHash = pseudoHashPassword(password);
-
-    let foundUser: AuthUser | null = null;
-    let userName: string | undefined = undefined;
-
-    // Check demo admin credentials
-    if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-      foundUser = { email, name: "Admin User" };
-      userName = "Admin User";
-    } else {
-      // Check localStorage for registered users
-      try {
-        const existingUsersString = localStorage.getItem(USERS_STORAGE_KEY);
-        const existingUsers: StoredUser[] = existingUsersString ? JSON.parse(existingUsersString) : [];
-        
-        const registeredUser = existingUsers.find(u => u.email === email);
-
-        if (registeredUser && registeredUser.passwordHash === passwordHash) {
-          foundUser = { email: registeredUser.email, name: registeredUser.name };
-          userName = registeredUser.name;
-        }
-      } catch (error) {
-        console.error("Error reading registered users from localStorage:", error);
-        toast({
-          title: "Login Error",
-          description: "An error occurred while trying to log in. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    if (foundUser) {
-      const userToStore: AuthUser = { email: foundUser.email, name: userName };
-      setUser(userToStore);
-      localStorage.setItem(LOGGED_IN_USER_KEY, JSON.stringify(userToStore));
-      router.push('/create-order');
-      toast({ title: "Login Successful!", description: `Welcome back, ${userName || 'user'}!` });
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password.",
-        variant: "destructive",
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const userToStore: AuthUser = data;
+        setUser(userToStore);
+        localStorage.setItem(LOGGED_IN_USER_KEY, JSON.stringify(userToStore));
+        router.push('/create-order');
+        toast({ title: "Login Successful!", description: `Welcome back, ${userToStore.name || 'user'}!` });
+      } else {
+        toast({
+            title: "Login Failed",
+            description: data.message || "Invalid email or password.",
+            variant: "destructive",
+        });
+      }
+    } catch (error) {
+        console.error("Login fetch error:", error);
+        toast({
+            title: "Login Error",
+            description: "Could not connect to the server. Please try again later.",
+            variant: "destructive",
+        });
     }
   }, [router, toast]);
 

@@ -8,7 +8,7 @@ export interface MenuItem {
   portion?: string; // e.g., 'Half', 'Full', 'Regular'
   imageUrl?: string;
   dataAiHint?: string;
-  userId?: string; // Email of the user who owns the menu item
+  userId: string; // Email of the user who owns the menu item
 }
 
 export type OrderType = 'delivery' | 'dine-in'; // Removed 'take-away'
@@ -37,6 +37,7 @@ export interface Order {
 }
 
 export interface AuthUser {
+  id?: number;
   email: string;
   name?: string; // Add name to AuthUser
 }

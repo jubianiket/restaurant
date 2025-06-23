@@ -14,12 +14,6 @@ import { UserPlus, Mail, KeyRound, Loader2 } from 'lucide-react';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useRouter } from 'next/navigation';
 
-const USERS_STORAGE_KEY = 'foodieRegisteredUsers';
-
-// Basic pseudo-hashing for demonstration. DO NOT USE IN PRODUCTION.
-const pseudoHashPassword = (password: string): string => {
-  return `hashed_${password}_${password.split('').reverse().join('')}`;
-};
 
 export default function SignUpPage() {
   const { toast } = useToast();
@@ -73,44 +67,33 @@ export default function SignUpPage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     try {
-      const existingUsersString = localStorage.getItem(USERS_STORAGE_KEY);
-      const existingUsers: StoredUser[] = existingUsersString ? JSON.parse(existingUsersString) : [];
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), password }),
+      });
 
-      if (existingUsers.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) {
+      const data = await response.json();
+
+      if (response.ok) {
         toast({
-          title: "Email Exists",
-          description: "This email address is already registered. Please use a different email or log in.",
+          title: "Sign Up Successful!",
+          description: "Welcome! Please log in with your new account.",
+        });
+        router.push('/'); 
+      } else {
+        toast({
+          title: "Sign Up Failed",
+          description: data.message || "An unexpected error occurred.",
           variant: "destructive",
         });
-        setIsSubmitting(false);
-        return;
       }
-      
-      const passwordHash = pseudoHashPassword(password);
-
-      const newUser: StoredUser = { 
-        name: name.trim(), 
-        email: email.trim().toLowerCase(), 
-        passwordHash 
-      };
-      existingUsers.push(newUser);
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(existingUsers));
-
-      toast({
-        title: "Sign Up Successful!",
-        description: "Welcome! Please log in with your new account.",
-      });
-      
-      router.push('/'); 
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Signup fetch error:", error);
       toast({
         title: "Sign Up Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: "Could not connect to the server. Please try again.",
         variant: "destructive",
       });
     } finally {

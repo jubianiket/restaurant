@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 });
     }
 
-    const menuItems = getMenuItems(userId);
+    const menuItems = await getMenuItems(userId);
     return NextResponse.json(menuItems);
   } catch (error) {
     console.error("Failed to fetch menu items for admin:", error);
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     
     const newItemData = parseResult.data;
     // Pass userId explicitly to addMenuItem
-    const createdItem = addMenuItem(newItemData, userId as string);
+    const createdItem = await addMenuItem(newItemData, userId as string);
     return NextResponse.json(createdItem, { status: 201 });
   } catch (error) {
     console.error("Failed to create menu item:", error);

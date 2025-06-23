@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'Excel file is empty or has no data rows.' }, { status: 400 });
     }
 
-    const processedItems = replaceMenuItemsForUser(newMenuItemsData, userId);
+    const processedItems = await replaceMenuItemsForUser(newMenuItemsData, userId);
 
     return NextResponse.json({ 
         message: `Menu items for user ${userId} uploaded successfully. ${processedItems.length} items processed.`, 
