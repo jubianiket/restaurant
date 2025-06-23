@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -10,16 +11,18 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, History, LayoutDashboard, Settings, LogIn, LogOut, UserCircle, Loader2, UserPlus, UtensilsCrossed } from "lucide-react";
+import { Home, History, LayoutDashboard, Settings, LogIn, LogOut, UserCircle, Loader2, UserPlus, UtensilsCrossed, PanelLeft } from "lucide-react";
 
 
 // This component has been repurposed to be the main Sidebar Navigation.
 export default function HeaderAsSidebarNav() {
     const { user, logout, isLoading } = useAuth();
     const pathname = usePathname();
+    const { toggleSidebar } = useSidebar();
   
     const isActive = (path: string) => pathname === path;
 
@@ -111,6 +114,18 @@ export default function HeaderAsSidebarNav() {
                         </SidebarMenuButton>
                     </div>
                 )}
+                <div className="hidden border-t border-sidebar-border md:block">
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton onClick={toggleSidebar}>
+                                <PanelLeft />
+                                <span className="group-data-[collapsible=icon]:hidden">
+                                    Collapse
+                                </span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </div>
             </SidebarFooter>
         </Sidebar>
     );
